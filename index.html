@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>T-Level Portal Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&family=Space+Grotesk:wght=500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#eaeded] text-[#111111] antialiased font-sans flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full border border-slate-200">
+        <div class="text-center mb-6">
+            <span class="text-3xl font-bold text-[#ff9900] tracking-tight">amazon</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded ml-1 font-mono">PORTAL</span>
+        </div>
+
+        <div id="login-error" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 hidden"></div>
+
+        <div id="signin-section">
+            <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Sign In</h2>
+            <p class="text-slate-500 text-xs mb-4">Access your work experience tracker</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
+                    <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="student@school.uk" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
+                    <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
+                </div>
+                <button onclick="handlePortalLoginVerification()" class="w-full bg-[#131921] hover:bg-slate-800 text-[#ff9900] py-2.5 rounded-xl font-bold transition cursor-pointer">
+                    Sign In
+                </button>
+                
+                <button onclick="handleGuestAccess()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-semibold transition cursor-pointer border border-slate-200">
+                    Continue as Guest (No Account)
+                </button>
+            </div>
+            <p class="text-xs text-center text-slate-500 mt-4">New to the portal? <button onclick="toggleAuthView(true)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Create an account</button></p>
+        </div>
+
+        <div id="signup-section" class="hidden">
+            <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Create Account</h2>
+            <p class="text-slate-500 text-xs mb-4">Register your tracker profile</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Full Name</label>
+                    <input id="signup-name" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="Alex Mercer" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
+                    <input id="signup-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="alex@school.uk" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Account Type / Role</label>
+                    <select id="signup-role" onchange="handleRoleChange()" class="w-full px-4 py-2 border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-[#ff9900] text-sm text-slate-700">
+                        <option value="Student">Student (No code required)</option>
+                        <option value="Teacher">Teacher / Tutor</option>
+                        <option value="Parent">Parent / Guardian</option>
+                        <option value="IT Staff">IT Support Staff</option>
+                    </select>
+                </div>
+                <div id="school-code-box" class="hidden">
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase text-amber-600">School Authorization Code</label>
+                    <input id="signup-code" type="text" class="w-full px-4 py-2 border border-amber-300 bg-amber-50/30 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. TLEVEL2026" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
+                    <input id="signup-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
+                </div>
+                <button onclick="handlePortalRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold transition cursor-pointer">
+                    Create Portal Profile
+                </button>
+            </div>
+            <p class="text-xs text-center text-slate-500 mt-4">Already have a profile? <button onclick="toggleAuthView(false)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Sign in instead</button></p>
+        </div>
+    </div>
+
+    <script>
+        const VALID_SCHOOL_CODE = "TLEVEL2026";
+
+        function toggleAuthView(showSignup) {
+            const errorBox = document.getElementById('login-error');
+            if(errorBox) errorBox.classList.add('hidden');
+            
+            if (showSignup) {
+                document.getElementById('signin-section').classList.add('hidden');
+                document.getElementById('signup-section').classList.remove('hidden');
+                handleRoleChange();
+            } else {
+                document.getElementById('signup-section').classList.add('hidden');
+                document.getElementById('signin-section').classList.remove('hidden');
+            }
+        }
+
+        function handleRoleChange() {
+            const role = document.getElementById('signup-role').value;
+            const codeBox = document.getElementById('school-code-box');
+            if (role === 'Student') {
+                codeBox.classList.add('hidden');
+            } else {
+                codeBox.classList.remove('hidden');
+            }
+        }
+
+        // Bypasses requirements and assigns a temporary guest session
+        function handleGuestAccess() {
+            localStorage.setItem('activeSession', 'Guest User');
+            localStorage.setItem('activePathway', 'Temporary View (No Saved Data)');
+            window.location.href = './dashboard.html';
+        }
+
+        function handlePortalRegistration() {
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim().toLowerCase();
+            const role = document.getElementById('signup-role').value;
+            const code = document.getElementById('signup-code').value.trim();
+            const pass = document.getElementById('signup-password').value.trim();
+            const errorBox = document.getElementById('login-error');
+
+            if (!name || !email || !pass) {
+                errorBox.textContent = "Please fill in all standard registration fields.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            if (role !== 'Student' && code !== VALID_SCHOOL_CODE) {
+                errorBox.textContent = "Invalid School Authorization Code.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            const profileData = { fullName: name, email: email, role: role, password: pass };
+            localStorage.setItem(`user_email_${email}`, JSON.stringify(profileData));
+
+            alert(`Registration successful!`);
+            toggleAuthView(false);
+            document.getElementById('login-email').value = email;
+        }
+
+        function handlePortalLoginVerification() {
+            const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
+            const passInput = document.getElementById('login-password').value.trim();
+            const errorBox = document.getElementById('login-error');
+
+            if (emailInput === 'admin@school.uk' && passInput === 'supersecret') {
+                localStorage.setItem('activeSession', 'Master Administrator');
+                window.location.href = './admin.html';
+                return;
+            }
+
+            if (emailInput === 'student@school.uk' && passInput === 'password') {
+                localStorage.setItem('activeSession', 'Alex Mercer');
+                localStorage.setItem('activePathway', 'Digital Production (Student View)');
+                window.location.href = './dashboard.html';
+                return;
+            }
+
+            const savedUser = localStorage.getItem(`user_email_${emailInput}`);
+            if (savedUser) {
+                const parsedProfile = JSON.parse(savedUser);
+                if (parsedProfile.password === passInput) {
+                    localStorage.setItem('activeSession', parsedProfile.fullName);
+                    localStorage.setItem('activePathway', `Portal Role: ${parsedProfile.role}`);
+                    window.location.href = './dashboard.html';
+                    return;
+                }
+            }
+
+            errorBox.textContent = "Invalid tracking email address or password combination.";
+            errorBox.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

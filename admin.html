@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amazon Placements - System Administration Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&family=JetBrains+Mono:wght=400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-slate-100 antialiased font-sans min-h-screen flex flex-col">
+
+    <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center gap-3">
+            <span class="text-xl font-bold text-[#ff9900] tracking-tight italic">amazon</span>
+            <span class="text-xs bg-amber-500/10 text-amber-400 font-mono border border-amber-500/20 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Root Control Panel</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs">
+            <div class="text-right">
+                <p class="font-bold text-slate-200">System Root Admin</p>
+                <p class="text-[10px] text-slate-400 font-mono">Status: Live Access Mode</p>
+            </div>
+            <button onclick="window.location.href='./index.html';" class="bg-slate-800 hover:bg-red-950 hover:text-red-400 border border-slate-700 px-3 py-1.5 rounded transition text-xs font-medium cursor-pointer">
+                Exit Panel
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
+        
+        <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm">
+            <h2 class="text-lg font-bold text-white tracking-tight">Registered Portal Users Monitor</h2>
+            <p class="text-slate-400 text-xs mt-0.5">Real-time status tracking inside browser local storage keys.</p>
+            
+            <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-mono text-[10px] bg-slate-900/50">
+                            <th class="p-3">Full Name</th>
+                            <th class="p-3">Registered Email</th>
+                            <th class="p-3">Assigned Role</th>
+                            <th class="p-3">Cached Password Token</th>
+                            <th class="p-3 text-right">Database Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-table" class="divide-y divide-slate-800">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-red-950/20 border border-red-900/40 p-6 rounded-xl flex items-center justify-between gap-4">
+            <div>
+                <h3 class="text-sm font-bold text-red-400">Emergency System Factory Reset</h3>
+                <p class="text-slate-400 text-xs mt-1">This deletes all custom accounts, hours, entries, and chat logs stored inside the local environment.</p>
+            </div>
+            <button onclick="wipeSystemDatabase()" class="bg-red-900 hover:bg-red-800 text-white text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shadow-md">
+                Wipe Local Environment Data
+            </button>
+        </div>
+    </main>
+
+    <footer class="p-6 text-center text-[11px] text-slate-500 font-mono border-t border-slate-950">
+        © 2026 AmazonPlacements UK Admin Engine • Session Data Key Verified
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadSystemProfiles);
+
+        function loadSystemProfiles() {
+            const tableBody = document.getElementById('admin-users-table');
+            tableBody.innerHTML = '';
+            
+            let accountCount = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const storageKey = localStorage.key(i);
+                if (storageKey.startsWith('user_email_')) {
+                    accountCount++;
+                    const userRecord = JSON.parse(localStorage.getItem(storageKey));
+                    
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-900/40 transition text-slate-300";
+                    row.innerHTML = `
+                        <td class="p-3 font-bold text-white">${userRecord.fullName}</td>
+                        <td class="p-3 font-mono text-amber-400">${userRecord.email}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                                ${userRecord.role}
+                            </span>
+                        </td>
+                        <td class="p-3 font-mono text-slate-500">${userRecord.password}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="purgeSingleUser('${storageKey}')" class="text-xs text-red-400 hover:text-red-300 font-medium hover:underline cursor-pointer bg-transparent border-0">
+                                Delete Account
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            }
+
+            if (accountCount === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-8 text-center text-slate-500 font-mono text-xs">
+                            No custom student, teacher, parent, or IT staff entries detected in local state memory.
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function purgeSingleUser(key) {
+            if (confirm("Are you sure you want to remove this user profile from the live registry?")) {
+                localStorage.removeItem(key);
+                loadSystemProfiles();
+            }
+        }
+
+        function wipeSystemDatabase() {
+            if (confirm("CRITICAL WARNING: This will instantly format and wipe all user data, logs, hours, and roles permanently. Proceed?")) {
+                localStorage.clear();
+                alert("Database reset successfully completed.");
+                window.location.href = './index.html';
+            }
+        }
+    </script>
+</body>
+</html>
