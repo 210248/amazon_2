@@ -39,6 +39,21 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
         
+        <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div class="md:col-span-2">
+                <h2 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                    🔑 School Authorization Passcode Manager
+                </h2>
+                <p class="text-slate-400 text-xs mt-0.5">Students must enter this matching passcode string on signup before receiving a Resend 2FA authentication token link.</p>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <input type="text" id="admin-school-code-input" placeholder="e.g. AMZN-TLEVEL" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 w-full font-mono max-w-[180px]" />
+                <button onclick="setSchoolAuthCode()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0">
+                    Update Code
+                </button>
+            </div>
+        </div>
+        
         <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm">
             <h2 class="text-lg font-bold text-white tracking-tight">Registered Portal Users Monitor</h2>
             <p class="text-slate-400 text-xs mt-0.5">Real-time status tracking inside browser local storage keys.</p>
@@ -55,7 +70,7 @@
                         </tr>
                     </thead>
                     <tbody id="admin-users-table" class="divide-y divide-slate-800">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -76,7 +91,22 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', loadSystemProfiles);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSystemProfiles();
+            // Load current registration code into view placeholder input
+            const activeCode = localStorage.getItem('valid_school_auth_code') || "AMZN-TLEVEL";
+            document.getElementById('admin-school-code-input').value = activeCode;
+        });
+
+        function setSchoolAuthCode() {
+            const inputVal = document.getElementById('admin-school-code-input').value.trim();
+            if (!inputVal) {
+                alert("Authorization string value cannot be empty.");
+                return;
+            }
+            localStorage.setItem('valid_school_auth_code', inputVal);
+            alert(`✨ Global Registration Passcode updated to: ${inputVal}`);
+        }
 
         function loadSystemProfiles() {
             const tableBody = document.getElementById('admin-users-table');

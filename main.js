@@ -12,17 +12,29 @@ function toggleAuthView(showSignup) {
     }
 }
 
-// Step 1: Handle account registration + Generate and Send 2FA Code
+// Step 1: Handle account registration + School Auth Code + Resend 2FA
 async function handlePortalRegistration() {
     const name = document.getElementById('signup-name').value.trim();
     const role = document.getElementById('signup-role').value;
-    const user = document.getElementById('signup-username').value.trim().toLowerCase();
+    const user = document.getElementById('signup-username').value.trim().toLowerCase(); // Email Address
     const pass = document.getElementById('signup-password').value.trim();
+    
+    // Target your school code input field from your signup form layout
+    const schoolCodeField = document.getElementById('signup-school-code');
+    const schoolCodeInput = schoolCodeField ? schoolCodeField.value.trim() : "";
     const errorBox = document.getElementById('login-error');
 
     // Basic Validation Check
-    if (!name || !user || !pass) {
-        errorBox.textContent = "Please fill in all registration fields.";
+    if (!name || !user || !pass || !schoolCodeInput) {
+        errorBox.textContent = "Please fill in all registration fields, including your School Access Code.";
+        errorBox.classList.remove('hidden');
+        return;
+    }
+
+    // Validate the entering school code against admin's saved credentials
+    const systemRequiredCode = localStorage.getItem('valid_school_auth_code') || "AMZN-TLEVEL"; 
+    if (schoolCodeInput !== systemRequiredCode) {
+        errorBox.textContent = "❌ Invalid School Access Code. Please consult your administrator.";
         errorBox.classList.remove('hidden');
         return;
     }
@@ -31,7 +43,7 @@ async function handlePortalRegistration() {
     const token2FA = Math.floor(100000 + Math.random() * 900000).toString();
     
     // Temporarily save registration state and code for verification
-    const tempProfile = { fullName: name, role: role, username: user, password: pass, code: token2FA };
+    const tempProfile = { fullName: name, role: role, email: user, password: pass, code: token2FA };
     localStorage.setItem('pending_2fa_session', JSON.stringify(tempProfile));
 
     // Trigger the Resend backend API function to deliver the verification code
@@ -42,7 +54,7 @@ async function handlePortalRegistration() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                email: user, // Using username as the email address destination
+                email: user, 
                 name: name,
                 pathway: `Your 2FA Verification Security Code is: ${token2FA}`
             }),
@@ -86,11 +98,12 @@ function verifyPortal2FACode(username) {
         const finalProfile = { 
             fullName: parsedData.fullName, 
             role: parsedData.role, 
-            username: parsedData.username, 
+            email: parsedData.email, 
             password: parsedData.password 
         };
         
-        localStorage.setItem(`user_${username}`, JSON.stringify(finalProfile));
+        // Stored matching your profile layout syntax prefix ("user_email_")
+        localStorage.setItem(`user_email_${username}`, JSON.stringify(finalProfile));
         localStorage.removeItem('pending_2fa_session');
 
         alert(`✨ 2FA Verified! Registered successfully as: ${parsedData.role}. You can now log in.`);
@@ -116,8 +129,8 @@ function handlePortalLoginVerification() {
         return;
     }
 
-    // Search local database profiles
-    const savedUser = localStorage.getItem(`user_${userInput}`);
+    // Search local database profiles matching registration layout format
+    const savedUser = localStorage.getItem(`user_email_${userInput}`);
     if (savedUser) {
         const parsedProfile = JSON.parse(savedUser);
         if (parsedProfile.password === passInput) {
