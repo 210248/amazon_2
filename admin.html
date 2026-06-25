@@ -99,14 +99,28 @@
         });
 
         function setSchoolAuthCode() {
-            const inputVal = document.getElementById('admin-school-code-input').value.trim();
-            if (!inputVal) {
-                alert("Authorization string value cannot be empty.");
-                return;
-            }
-            localStorage.setItem('valid_school_auth_code', inputVal);
-            alert(`✨ Global Registration Passcode updated to: ${inputVal}`);
-        }
+    const inputVal = document.getElementById('admin-school-code-input').value.trim();
+    if (!inputVal) {
+        alert("Authorization string value cannot be empty.");
+        return;
+    }
+    
+    // Save it directly to memory
+    localStorage.setItem('valid_school_auth_code', inputVal);
+    
+    // Target the button directly using its ID or text to change UI status
+    const updateBtn = document.querySelector('button[onclick="setSchoolAuthCode()"]');
+    if (updateBtn) {
+        const originalText = updateBtn.textContent;
+        updateBtn.textContent = "Saved! ✓";
+        updateBtn.className = "bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition shrink-0";
+        
+        setTimeout(() => {
+            updateBtn.textContent = originalText;
+            updateBtn.className = "bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0";
+        }, 2000);
+    }
+}
 
         function loadSystemProfiles() {
             const tableBody = document.getElementById('admin-users-table');
