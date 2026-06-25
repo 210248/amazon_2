@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 
 // Initialize Resend with your hidden environment variable API key
-const resend = new Resend(process.env.re_5hTgNveu_8M29A9Z8roLGef9D22YqwwG3);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
     // Only allow POST requests (form submissions)
