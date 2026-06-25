@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Portal Login</title>
@@ -19,87 +20,95 @@
         }
     </script>
 </head>
-<body class="bg-[#eaeded] text-[#111111] antialiased font-sans flex flex-col items-center justify-center min-h-screen p-4">
+<body id="dashboard-global-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans flex flex-col items-center justify-center min-h-screen p-4 transition-all duration-200">
 
-    <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full border border-slate-200">
-        <div class="text-center mb-6">
-            <span class="text-3xl font-bold text-[#ff9900] tracking-tight">amazon</span>
-            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded ml-1 font-mono">PORTAL</span>
-        </div>
-
-        <div id="login-error" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 hidden"></div>
-
-        <div id="signin-section">
-            <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Sign In / Quick Access</h2>
-            <p class="text-slate-500 text-xs mb-4">Access your work experience tracker</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
-                    <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="student@school.uk" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
-                    <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
-                </div>
-                
-                <button onclick="handlePortalLoginVerification()" class="w-full bg-[#131921] hover:bg-slate-800 text-[#ff9900] py-2.5 rounded-xl font-bold transition cursor-pointer">
-                    Sign In
-                </button>
-                
-                <div class="relative flex py-1 items-center">
-                    <div class="flex-grow border-t border-slate-200"></div>
-                    <span class="flex-shrink mx-4 text-slate-400 text-[10px] uppercase font-bold tracking-wider">Or</span>
-                    <div class="flex-grow border-t border-slate-200"></div>
-                </div>
-
-                <button onclick="handleGuestAccess()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 shadow-sm">
-                    Continue as Guest (No Account Required)
-                </button>
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col items-center justify-center transition-all duration-300 bg-[#eaeded] p-4">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-md max-w-md w-full border border-slate-200">
+            <div class="text-center mb-6">
+                <span class="text-3xl font-bold text-[#ff9900] tracking-tight">amazon</span>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded ml-1 font-mono">PORTAL</span>
             </div>
-            <p class="text-xs text-center text-slate-500 mt-4">New to the portal? <button onclick="toggleAuthView(true)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Create an account</button></p>
+
+            <div id="login-error" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 hidden"></div>
+
+            <div id="signin-section">
+                <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Sign In / Quick Access</h2>
+                <p class="text-slate-500 text-xs mb-4">Access your work experience tracker</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
+                        <input id="login-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="student@school.uk" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
+                        <input id="login-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
+                    </div>
+                    
+                    <button onclick="handlePortalLoginVerification()" class="w-full bg-[#131921] hover:bg-slate-800 text-[#ff9900] py-2.5 rounded-xl font-bold transition cursor-pointer">
+                        Sign In
+                    </button>
+                    
+                    <div class="relative flex py-1 items-center">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink mx-4 text-slate-400 text-[10px] uppercase font-bold tracking-wider">Or</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <button onclick="handleGuestAccess()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 shadow-sm">
+                        Continue as Guest (No Account Required)
+                    </button>
+                </div>
+                <p class="text-xs text-center text-slate-500 mt-4">New to the portal? <button onclick="toggleAuthView(true)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Create an account</button></p>
+            </div>
+
+            <div id="signup-section" class="hidden">
+                <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Create Account</h2>
+                <p class="text-slate-500 text-xs mb-4">Register your tracker profile</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Full Name</label>
+                        <input id="signup-name" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="Alex Mercer" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
+                        <input id="signup-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="alex@school.uk" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Account Type / Role</label>
+                        <select id="signup-role" onchange="handleRoleChange()" class="w-full px-4 py-2 border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-[#ff9900] text-sm text-slate-700">
+                            <option value="Student">Student (No code required)</option>
+                            <option value="Teacher">Teacher / Tutor</option>
+                            <option value="Parent">Parent / Guardian</option>
+                            <option value="IT Staff">IT Support Staff</option>
+                        </select>
+                    </div>
+                    <div id="school-code-box" class="hidden">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase text-amber-600">School Authorization Code</label>
+                        <input id="signup-code" type="text" class="w-full px-4 py-2 border border-amber-300 bg-amber-50/30 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. TLEVEL2026" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
+                        <input id="signup-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
+                    </div>
+                    <button onclick="handlePortalRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold transition cursor-pointer">
+                        Create Portal Profile
+                    </button>
+                </div>
+                <p class="text-xs text-center text-slate-500 mt-4">Already have a profile? <button onclick="toggleAuthView(false)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Sign in instead</button></p>
+            </div>
         </div>
 
-        <div id="signup-section" class="hidden">
-            <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Create Account</h2>
-            <p class="text-slate-500 text-xs mb-4">Register your tracker profile</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Full Name</label>
-                    <input id="signup-name" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="Alex Mercer" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
-                    <input id="signup-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="alex@school.uk" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Account Type / Role</label>
-                    <select id="signup-role" onchange="handleRoleChange()" class="w-full px-4 py-2 border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-[#ff9900] text-sm text-slate-700">
-                        <option value="Student">Student (No code required)</option>
-                        <option value="Teacher">Teacher / Tutor</option>
-                        <option value="Parent">Parent / Guardian</option>
-                        <option value="IT Staff">IT Support Staff</option>
-                    </select>
-                </div>
-                <div id="school-code-box" class="hidden">
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase text-amber-600">School Authorization Code</label>
-                    <input id="signup-code" type="text" class="w-full px-4 py-2 border border-amber-300 bg-amber-50/30 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. TLEVEL2026" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
-                    <input id="signup-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
-                </div>
-                <button onclick="handlePortalRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold transition cursor-pointer">
-                    Create Portal Profile
-                </button>
-            </div>
-            <p class="text-xs text-center text-slate-500 mt-4">Already have a profile? <button onclick="toggleAuthView(false)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Sign in instead</button></p>
-        </div>
     </div>
 
     <script>
         const VALID_SCHOOL_CODE = "TLEVEL2026";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyGlobalAccessibilityStateTokens();
+        });
 
         function toggleAuthView(showSignup) {
             const errorBox = document.getElementById('login-error');
@@ -190,6 +199,36 @@
 
             errorBox.textContent = "Invalid tracking email address or password combination.";
             errorBox.classList.remove('hidden');
+        }
+
+        function applyGlobalAccessibilityStateTokens() {
+            const body = document.getElementById('dashboard-global-body');
+            const textScale = localStorage.getItem('access_text_scale') || 'small';
+            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
+
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (textScale === 'large') body.classList.add('text-base');
+            else if (textScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            if (contrastMode) {
+                body.style.filter = "contrast(1.15) saturate(1.05)";
+            } else {
+                body.style.filter = "none";
+            }
+
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
         }
     </script>
 </body>
