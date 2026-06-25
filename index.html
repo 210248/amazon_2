@@ -94,14 +94,11 @@
             <p class="text-xs text-center text-slate-500 mt-4">Already have a profile? <button onclick="toggleAuthView(false)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Sign in instead</button></p>
         </div>
     </div>
-
     <script>
         const VALID_SCHOOL_CODE = "TLEVEL2026";
-
         function toggleAuthView(showSignup) {
             const errorBox = document.getElementById('login-error');
             if(errorBox) errorBox.classList.add('hidden');
-            
             if (showSignup) {
                 document.getElementById('signin-section').classList.add('hidden');
                 document.getElementById('signup-section').classList.remove('hidden');
