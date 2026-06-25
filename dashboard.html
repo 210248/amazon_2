@@ -29,9 +29,9 @@
     <header class="bg-[#131921] text-white text-xs sticky top-0 z-40 shadow-md">
         <div class="px-4 py-2 flex items-center justify-between gap-4">
             <div class="flex items-center gap-4">
-                <div class="flex items-baseline" onclick="loadModulePage('DEFAULT_DASHBOARD', 'nav-dash-btn')" class="cursor-pointer">
-                    <span class="text-xl font-bold text-[#ff9900] tracking-tight italic select-none cursor-pointer">amazon</span>
-                    <span class="text-sm font-semibold text-white ml-0.5 tracking-wide select-none cursor-pointer">placements</span>
+                <div class="flex items-baseline cursor-pointer" onclick="loadModulePage('DEFAULT_DASHBOARD', 'nav-dash-btn')">
+                    <span class="text-xl font-bold text-[#ff9900] tracking-tight italic select-none">amazon</span>
+                    <span class="text-sm font-semibold text-white ml-0.5 tracking-wide select-none">placements</span>
                 </div>
                 
                 <div class="border border-slate-600 rounded px-2 py-0.5 text-[10px] bg-slate-800 font-mono tracking-wide">
@@ -77,6 +77,15 @@
                 <button onclick="loadModulePage('./searchbar.html', 'nav-courses-btn')" id="nav-courses-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0">Today's Core Courses</button>
                 <button onclick="loadModulePage('./logbook.html', 'nav-log-btn')" id="nav-log-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0">Track Placement Orders (Logbook)</button>
                 <button onclick="loadModulePage('./chatbot.html', 'nav-chat-btn')" id="nav-chat-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0">Customer Service Chat (Aria Coach)</button>
+                
+                <button onclick="handleResourcesTabAccess()" id="nav-resources-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-[#ff9900]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span>Placement Resources & Hub</span>
+                    <span id="resources-lock-indicator" class="ml-0.5 hidden">🔒</span>
+                </button>
+
                 <button onclick="loadModulePage('./accessibility.html', 'nav-access-btn')" id="nav-access-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0">Accessibility Options</button>
                 <button onclick="showAboutSection()" id="nav-about-btn" class="hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0">About T-Levels</button>
             </div>
@@ -172,21 +181,30 @@
     <script>
         document.addEventListener('DOMContentLoaded', initializeMasterDeck);
 
-        // Periodically refresh data changes from nested subframe environments
         window.addEventListener('message', function(event) {
             initializeMasterDeck();
         });
 
         function initializeMasterDeck() {
-            // Pull session metadata records
-            const activeUser = localStorage.getItem('activeSession') || 'Taylor Brooke';
-            const activePathway = localStorage.getItem('activePathway') || 'Digital Production, Design & Development';
+            const activeUser = localStorage.getItem('activeSession') || 'Guest User';
+            const activePathway = localStorage.getItem('activePathway') || 'Temporary View (No Saved Data)';
             
             document.getElementById('header-student-name').textContent = activeUser;
-            document.getElementById('account-name-span').textContent = activeUser.split(' ')[0];
+            if (document.getElementById('account-name-span')) {
+                document.getElementById('account-name-span').textContent = activeUser.split(' ')[0];
+            }
             document.getElementById('pathway-text').textContent = activePathway;
 
-            // Compute dynamic aggregate hours calculated across nested pages
+            // FOOLPROOF GUEST CHECK: Check if username contains "Guest"
+            const lockIndicator = document.getElementById('resources-lock-indicator');
+            if (lockIndicator) {
+                if (activeUser.toLowerCase().includes('guest')) {
+                    lockIndicator.classList.remove('hidden');
+                } else {
+                    lockIndicator.classList.add('hidden');
+                }
+            }
+
             let calculatedHours = 15.5;
             const customLogs = localStorage.getItem(`logs_${activeUser}`);
             if (customLogs) {
@@ -196,37 +214,49 @@
             }
             
             document.getElementById('hours-logged').textContent = calculatedHours.toFixed(1);
-            
-            // Recompute metric percentage status matching progress track constraints
             const progressPercent = Math.min((calculatedHours / 315) * 100, 100).toFixed(1);
             document.getElementById('hours-progress-bar').style.width = `${progressPercent}%`;
 
-            // Broadcast look and feel accessibility configs down to dashboard context level
             applyGlobalAccessibilityStateTokens();
         }
 
-        // Central Multi-Doc Core Router Engine
+        function handleResourcesTabAccess() {
+            const activeUser = localStorage.getItem('activeSession') || 'Guest User';
+            
+            if (activeUser.toLowerCase().includes('guest')) {
+                alert("🔒 Access Denied: This premium Placement Resource Hub is locked for Guest sessions. Please sign out and log into a full student profile to unlock.");
+            } else {
+                loadModulePage('./resources.html', 'nav-resources-btn');
+            }
+        }
+
         function loadModulePage(url, activeBtnId) {
             const dashSection = document.getElementById('main-dashboard-content');
             const iframeContainer = document.getElementById('workspace-iframe-container');
             const iframeViewport = document.getElementById('workspace-viewport');
             const aboutSection = document.getElementById('about-tlevels-content');
 
-            // Purge highlight styling states across tracking link lists
             const navButtons = document.querySelectorAll('#master-nav-links button, #nav-profile-btn');
             navButtons.forEach(btn => {
                 if (btn.id === 'nav-profile-btn') {
                     btn.className = "leading-tight text-left hidden sm:block hover:text-[#ff9900] transition group text-xs cursor-pointer bg-transparent border-0 outline-none";
                 } else {
-                    btn.className = "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0";
+                    if (btn.id === 'nav-resources-btn') {
+                        btn.className = "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0 flex items-center gap-1";
+                    } else {
+                        btn.className = "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0";
+                    }
                 }
             });
 
-            // Apply targeted visibility tokens matching input paths
             if (activeBtnId) {
                 const targetBtn = document.getElementById(activeBtnId);
                 if (targetBtn && activeBtnId !== 'nav-profile-btn') {
-                    targetBtn.className = "text-[#ff9900] font-bold pb-0.5 border-b-2 border-[#ff9900] cursor-pointer bg-transparent border-0";
+                    if (activeBtnId === 'nav-resources-btn') {
+                        targetBtn.className = "text-[#ff9900] font-bold pb-0.5 border-b-2 border-[#ff9900] cursor-pointer bg-transparent border-0 flex items-center gap-1";
+                    } else {
+                        targetBtn.className = "text-[#ff9900] font-bold pb-0.5 border-b-2 border-[#ff9900] cursor-pointer bg-transparent border-0";
+                    }
                 }
             }
 
@@ -250,22 +280,23 @@
 
             const navButtons = document.querySelectorAll('#master-nav-links button, #nav-profile-btn');
             navButtons.forEach(btn => {
-                btn.className = (btn.id === 'nav-profile-btn') ? 
-                "leading-tight text-left hidden sm:block hover:text-[#ff9900] transition group text-xs cursor-pointer bg-transparent border-0 outline-none" : 
-                "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0";
+                if (btn.id === 'nav-resources-btn') {
+                    btn.className = "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0 flex items-center gap-1";
+                } else {
+                    btn.className = (btn.id === 'nav-profile-btn') ? 
+                    "leading-tight text-left hidden sm:block hover:text-[#ff9900] transition group text-xs cursor-pointer bg-transparent border-0 outline-none" : 
+                    "hover:text-[#ff9900] transition cursor-pointer bg-transparent border-0";
+                }
             });
             document.getElementById('nav-about-btn').className = "text-[#ff9900] font-bold pb-0.5 border-b-2 border-[#ff9900] cursor-pointer bg-transparent border-0";
         }
 
-        // Global Navigation Search Bar Interceptor
         function triggerGlobalSearch() {
             const searchVal = document.getElementById('global-search-input').value.trim();
-            // Cache text criteria so searchbar.html can pick up query conditions on initialization loop
             localStorage.setItem('active_global_query', searchVal);
             loadModulePage('./searchbar.html', 'nav-courses-btn');
         }
 
-        // Global Sync Accessibility State Layer Hooks
         function applyGlobalAccessibilityStateTokens() {
             const body = document.getElementById('dashboard-global-body');
             const textScale = localStorage.getItem('access_text_scale') || 'small';
