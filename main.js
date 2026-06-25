@@ -12,7 +12,7 @@ function toggleAuthView(showSignup) {
     }
 }
 
-// Handle account registration + Resend Email Delivery
+// Step 1: Handle account registration + Generate and Send 2FA Code
 async function handlePortalRegistration() {
     const name = document.getElementById('signup-name').value.trim();
     const role = document.getElementById('signup-role').value;
@@ -27,11 +27,14 @@ async function handlePortalRegistration() {
         return;
     }
 
-    // 1. Save profile data locally along with their selected system role
-    const profileData = { fullName: name, role: role, username: user, password: pass };
-    localStorage.setItem(`user_${user}`, JSON.stringify(profileData));
+    // Generate a random 6-digit 2FA token
+    const token2FA = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Temporarily save registration state and code for verification
+    const tempProfile = { fullName: name, role: role, username: user, password: pass, code: token2FA };
+    localStorage.setItem('pending_2fa_session', JSON.stringify(tempProfile));
 
-    // 2. Trigger the Resend backend API function to send the welcome email
+    // Trigger the Resend backend API function to deliver the verification code
     try {
         const response = await fetch('/api/send-email', {
             method: 'POST',
@@ -39,27 +42,64 @@ async function handlePortalRegistration() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                email: user, // Using the username input as the target email address
+                email: user, // Using username as the email address destination
                 name: name,
-                pathway: `Portal Role: ${role}`
+                pathway: `Your 2FA Verification Security Code is: ${token2FA}`
             }),
         });
 
         const result = await response.json();
         
         if (result.success) {
-            console.log("Resend confirmation email sent successfully!");
+            // Prompt user for verification code immediately after successful dispatch
+            verifyPortal2FACode(user);
         } else {
-            console.error("Resend API warning:", result.error);
+            alert("Email delivery failed: " + result.error);
         }
     } catch (error) {
         console.error("Failed to reach serverless email function:", error);
+        alert("Could not connect to the registration service.");
+    }
+}
+
+// Step 2: Verify the 2FA Code
+function verifyPortal2FACode(username) {
+    const userInputCode = prompt("🔒 A 6-digit verification code was sent to your email. Please enter it below to confirm your account:");
+    
+    if (userInputCode === null) {
+        alert("Registration canceled.");
+        localStorage.removeItem('pending_2fa_session');
+        return;
     }
 
-    // 3. Complete user onboarding transition
-    alert(`Registration successful! Registered as: ${role}. You can now log in.`);
-    toggleAuthView(false);
-    document.getElementById('login-username').value = user;
+    const pendingData = localStorage.getItem('pending_2fa_session');
+    if (!pendingData) {
+        alert("Session timed out. Please register again.");
+        return;
+    }
+
+    const parsedData = JSON.parse(pendingData);
+
+    // Verify code match
+    if (userInputCode.trim() === parsedData.code) {
+        // Code matches! Clean up verification code and commit profile to storage
+        const finalProfile = { 
+            fullName: parsedData.fullName, 
+            role: parsedData.role, 
+            username: parsedData.username, 
+            password: parsedData.password 
+        };
+        
+        localStorage.setItem(`user_${username}`, JSON.stringify(finalProfile));
+        localStorage.removeItem('pending_2fa_session');
+
+        alert(`✨ 2FA Verified! Registered successfully as: ${parsedData.role}. You can now log in.`);
+        toggleAuthView(false);
+        document.getElementById('login-username').value = username;
+    } else {
+        alert("❌ Invalid verification code. Please check your spelling or try registering again.");
+        localStorage.removeItem('pending_2fa_session');
+    }
 }
 
 // Handle signing into an account
@@ -81,7 +121,6 @@ function handlePortalLoginVerification() {
     if (savedUser) {
         const parsedProfile = JSON.parse(savedUser);
         if (parsedProfile.password === passInput) {
-            // Save their session and pass their role directly into the workspace layout
             localStorage.setItem('activeSession', parsedProfile.fullName);
             localStorage.setItem('activePathway', `Portal Role: ${parsedProfile.role}`);
             window.location.href = './dashboard.html';
