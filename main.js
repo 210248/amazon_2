@@ -12,24 +12,51 @@ function toggleAuthView(showSignup) {
     }
 }
 
-// Handle account registration
-function handlePortalRegistration() {
+// Handle account registration + Resend Email Delivery
+async function handlePortalRegistration() {
     const name = document.getElementById('signup-name').value.trim();
     const role = document.getElementById('signup-role').value;
     const user = document.getElementById('signup-username').value.trim().toLowerCase();
     const pass = document.getElementById('signup-password').value.trim();
     const errorBox = document.getElementById('login-error');
 
+    // Basic Validation Check
     if (!name || !user || !pass) {
         errorBox.textContent = "Please fill in all registration fields.";
         errorBox.classList.remove('hidden');
         return;
     }
 
-    // Save profile data locally along with their selected system role
+    // 1. Save profile data locally along with their selected system role
     const profileData = { fullName: name, role: role, username: user, password: pass };
     localStorage.setItem(`user_${user}`, JSON.stringify(profileData));
 
+    // 2. Trigger the Resend backend API function to send the welcome email
+    try {
+        const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: user, // Using the username input as the target email address
+                name: name,
+                pathway: `Portal Role: ${role}`
+            }),
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log("Resend confirmation email sent successfully!");
+        } else {
+            console.error("Resend API warning:", result.error);
+        }
+    } catch (error) {
+        console.error("Failed to reach serverless email function:", error);
+    }
+
+    // 3. Complete user onboarding transition
     alert(`Registration successful! Registered as: ${role}. You can now log in.`);
     toggleAuthView(false);
     document.getElementById('login-username').value = user;
