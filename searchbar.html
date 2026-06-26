@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Hub - Search Registry</title>
@@ -20,36 +21,39 @@
         }
     </script>
 </head>
-<body class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6">
+<body id="dashboard-global-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans transition-all duration-200">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col mx-auto p-6 transition-all duration-300 bg-[#eaeded]">
         
-        <div class="bg-[#131921] p-4 rounded-xl shadow-md">
-            <div class="flex items-center h-10 bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-[#ff9900]">
-                <span class="bg-slate-100 text-slate-600 px-4 h-full flex items-center font-medium text-xs border-r border-slate-200">
-                    All Modules
-                </span>
-                <input id="search-input" type="text" oninput="executeSearchQuery()" placeholder="Search compliance, health & safety regulations, professional conduct..." class="w-full text-slate-800 px-4 outline-none text-xs" />
-                <button onclick="executeSearchQuery()" class="bg-[#ff9900] hover:bg-[#e48900] h-full px-6 text-slate-900 font-bold transition cursor-pointer">
-                    🔍
-                </button>
+        <div class="max-w-4xl mx-auto w-full space-y-6">
+            
+            <div class="bg-[#131921] p-4 rounded-xl shadow-md">
+                <div class="flex items-center h-10 bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-[#ff9900]">
+                    <span class="bg-slate-100 text-slate-600 px-4 h-full flex items-center font-medium text-xs border-r border-slate-200">
+                        All Modules
+                    </span>
+                    <input id="search-input" type="text" oninput="executeSearchQuery()" placeholder="Search compliance, health & safety regulations, professional conduct..." class="w-full text-slate-800 px-4 outline-none text-xs" />
+                    <button onclick="executeSearchQuery()" class="bg-[#ff9900] hover:bg-[#e48900] h-full px-6 text-slate-900 font-bold transition cursor-pointer">
+                        🔍
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2 px-1">
+                    Try searching keywords like <span class="text-white underline cursor-pointer" onclick="fillSearch('safety')">"safety"</span>, <span class="text-white underline cursor-pointer" onclick="fillSearch('gdpr')">"gdpr"</span>, or <span class="text-white underline cursor-pointer" onclick="fillSearch('conduct')">"conduct"</span>.
+                </p>
             </div>
-            <p class="text-[11px] text-slate-400 mt-2 px-1">
-                Try searching keywords like <span class="text-white underline cursor-pointer" onclick="fillSearch('safety')">"safety"</span>, <span class="text-white underline cursor-pointer" onclick="fillSearch('gdpr')">"gdpr"</span>, or <span class="text-white underline cursor-pointer" onclick="fillSearch('conduct')">"conduct"</span>.
-            </p>
+
+            <div class="bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-600 flex justify-between items-center shadow-xs">
+                <div>Showing matching index criteria mapping: <span id="results-count" class="font-bold text-[#c45500]">3 files available</span></div>
+                <span class="text-[10px] bg-slate-100 font-mono px-2 py-0.5 rounded text-slate-500 font-bold">Local Directory Filter</span>
+            </div>
+
+            <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-600 flex justify-between items-center shadow-xs">
-            <div>Showing matching index criteria mapping: <span id="results-count" class="font-bold text-[#c45500]">3 files available</span></div>
-            <span class="text-[10px] bg-slate-100 font-mono px-2 py-0.5 rounded text-slate-500 font-bold">Local Directory Filter</span>
-        </div>
-
-        <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            </div>
     </div>
 
     <script>
-        // Pre-baked internal information repository array
         const searchDatabase = [
             {
                 title: "Health and Safety at Work Act (1974)",
@@ -71,7 +75,10 @@
             }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => executeSearchQuery());
+        document.addEventListener('DOMContentLoaded', () => {
+            applyGlobalAccessibilityStateTokens();
+            executeSearchQuery();
+        });
 
         function fillSearch(keyword) {
             document.getElementById('search-input').value = keyword;
@@ -83,14 +90,12 @@
             const container = document.getElementById('results-container');
             const counter = document.getElementById('results-count');
             
-            // Filter database array items matching criteria text items
             const filtered = searchDatabase.filter(item => 
                 item.title.toLowerCase().includes(query) || 
                 item.category.toLowerCase().includes(query) || 
                 item.desc.toLowerCase().includes(query)
             );
 
-            // Update result tracking strings
             counter.textContent = `${filtered.length} entry items matching criteria`;
 
             if (filtered.length === 0) {
@@ -101,7 +106,6 @@
                 return;
             }
 
-            // Build item layout sheets
             container.innerHTML = '';
             filtered.forEach(item => {
                 const card = document.createElement('div');
@@ -123,6 +127,37 @@
                 `;
                 container.appendChild(card);
             });
+        }
+
+        function applyGlobalAccessibilityStateTokens() {
+            const body = document.getElementById('dashboard-global-body');
+            const textScale = localStorage.getItem('access_text_scale') || 'small';
+            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
+
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (textScale === 'large') body.classList.add('text-base');
+            else if (textScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            if (contrastMode) {
+                body.style.filter = "contrast(1.15) saturate(1.05)";
+            } else {
+                body.style.filter = "none";
+            }
+
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
         }
     </script>
 </body>

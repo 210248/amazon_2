@@ -1,38 +1,80 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Placement Resources & Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white p-6 font-sans antialiased text-slate-800">
+<body id="dashboard-global-body" class="bg-white text-slate-800 antialiased font-sans transition-all duration-200">
 
-    <div class="min-h-[300px]">
-        <span class="bg-amber-600 text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
-            Verified Student Registry Desk
-        </span>
-        <h2 class="text-xl md:text-2xl font-bold mt-2 tracking-tight text-slate-900 border-b pb-3 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-[#ff9900]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-            </svg>
-            Placement Resources & Industry Guide Hub
-        </h2>
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col mx-auto p-6 transition-all duration-300 bg-white">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
-            <div class="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                <h3 class="font-bold text-slate-900 text-sm mb-1">📘 Logbook Entry Guide</h3>
-                <p class="text-slate-500 mb-2">Learn how to write professional reflective evaluations that fulfill critical DfE validation criteria rules easily.</p>
-                <a href="#" onclick="alert('Downloading Documentation Guide...')" class="text-blue-600 font-semibold hover:underline">Download PDF Guide →</a>
-            </div>
-            <div class="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
-                <h3 class="font-bold text-slate-900 text-sm mb-1">🛡️ Workplace Health & Safety Standards</h3>
-                <p class="text-slate-500 mb-2">Essential compliance procedures to read before participating in engineering, workspace operations, or tech handling.</p>
-                <a href="#" onclick="alert('Opening Regulations Sheet...')" class="text-blue-600 font-semibold hover:underline">View Regulations →</a>
+        <div class="max-w-4xl mx-auto w-full min-h-[300px]">
+            <span class="bg-amber-600 text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
+                Verified Student Registry Desk
+            </span>
+            <h2 class="text-xl md:text-2xl font-bold mt-2 tracking-tight text-slate-900 border-b pb-3 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-[#ff9900]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                Placement Resources & Industry Guide Hub
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+                <div class="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                    <h3 class="font-bold text-slate-900 text-sm mb-1">📘 Logbook Entry Guide</h3>
+                    <p class="text-slate-500 mb-2">Learn how to write professional reflective evaluations that fulfill critical DfE validation criteria rules easily.</p>
+                    <a href="#" onclick="alert('Downloading Documentation Guide...')" class="text-blue-600 font-semibold hover:underline">Download PDF Guide →</a>
+                </div>
+                <div class="p-4 border border-slate-100 rounded-xl bg-slate-50/50">
+                    <h3 class="font-bold text-slate-900 text-sm mb-1">🛡️ Workplace Health & Safety Standards</h3>
+                    <p class="text-slate-500 mb-2">Essential compliance procedures to read before participating in engineering, workspace operations, or tech handling.</p>
+                    <a href="#" onclick="alert('Opening Regulations Sheet...')" class="text-blue-600 font-semibold hover:underline">View Regulations →</a>
+                </div>
             </div>
         </div>
+
     </div>
 
+    <script>
+        // Synchronize display layout variables on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            applyGlobalAccessibilityStateTokens();
+        });
+
+        function applyGlobalAccessibilityStateTokens() {
+            const body = document.getElementById('dashboard-global-body');
+            const textScale = localStorage.getItem('access_text_scale') || 'small';
+            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
+
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (textScale === 'large') body.classList.add('text-base');
+            else if (textScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            if (contrastMode) {
+                body.style.filter = "contrast(1.15) saturate(1.05)";
+            } else {
+                body.style.filter = "none";
+            }
+
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
+        }
+    </script>
 </body>
 </html>

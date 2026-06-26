@@ -1,5 +1,42 @@
-// Toggle between Login and Signup fields on the main screen
-function toggleAuthView(showSignup) {
+// =========================================================================
+// 1. UNIVERSAL ACCESSIBILITY LOGIC (Runs immediately on every page load)
+// =========================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    applySavedAccessibilitySettings();
+});
+
+function applySavedAccessibilitySettings() {
+    // High Contrast Check
+    const highContrastActive = localStorage.getItem('accessibility_high_contrast') === 'true';
+    if (highContrastActive) {
+        document.body.classList.add('high-contrast-mode');
+    } else {
+        document.body.classList.remove('high-contrast-mode');
+    }
+
+    // Large Font Check
+    const largeFontActive = localStorage.getItem('accessibility_large_font') === 'true';
+    if (largeFontActive) {
+        document.body.classList.add('text-lg-custom');
+    } else {
+        document.body.classList.remove('text-lg-custom');
+    }
+}
+
+// Global window functions so settings buttons anywhere can call them
+window.toggleAccessibilityFeature = function(featureKey) {
+    const isCurrentlyActive = localStorage.getItem(featureKey) === 'true';
+    localStorage.setItem(featureKey, !isCurrentlyActive);
+    applySavedAccessibilitySettings();
+};
+
+
+// =========================================================================
+// 2. VISUAL LAYOUT & NAVIGATION INTERFACES
+// =========================================================================
+
+window.toggleAuthView = function(showSignup) {
     const errorBox = document.getElementById('login-error');
     if(errorBox) errorBox.classList.add('hidden');
     
@@ -10,40 +47,39 @@ function toggleAuthView(showSignup) {
         document.getElementById('signup-section').classList.add('hidden');
         document.getElementById('signin-section').classList.remove('hidden');
     }
-}
+};
 
-// Step 1: Handle account registration, School Code verification, and 2FA trigger
-async function handlePortalRegistration() {
+
+// =========================================================================
+// 3. ACCOUNT REGISTRATION FLOW (WITH RESEND EMAIL 2FA & POSTGRES)
+// =========================================================================
+
+window.handlePortalRegistration = async function() {
     const name = document.getElementById('signup-name').value.trim();
     const role = document.getElementById('signup-role').value;
     const user = document.getElementById('signup-username').value.trim().toLowerCase(); // Email Address
     const pass = document.getElementById('signup-password').value.trim();
-    
     const schoolCodeField = document.getElementById('signup-school-code');
     const schoolCodeInput = schoolCodeField ? schoolCodeField.value.trim() : "";
     const errorBox = document.getElementById('login-error');
 
-    // Basic Validation Check
     if (!name || !user || !pass || !schoolCodeInput) {
         errorBox.textContent = "Please fill in all registration fields, including your School Access Code.";
         errorBox.classList.remove('hidden');
         return;
     }
 
-    // Generate a random 6-digit 2FA token
+    // Generate random 6-digit 2FA token
     const token2FA = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Temporarily save the registration state and token to combine with the database later
+    // Save state temporarily in cache until token matching completes
     const tempProfile = { fullName: name, role: role, email: user, password: pass, code: token2FA, schoolCode: schoolCodeInput };
     localStorage.setItem('pending_2fa_session', JSON.stringify(tempProfile));
 
-    // Trigger the backend API function to deliver the verification code via Resend
     try {
         const response = await fetch('/api/send-email', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 email: user, 
                 name: name,
@@ -52,22 +88,19 @@ async function handlePortalRegistration() {
         });
 
         const result = await response.json();
-        
         if (result.success) {
-            // Prompt user for verification code immediately after successful dispatch
             verifyPortal2FACode(user);
         } else {
-            errorBox.textContent = "Email delivery failed: " + result.error;
+            errorBox.textContent = "Email dispatch failed: " + result.error;
             errorBox.classList.remove('hidden');
         }
     } catch (error) {
-        console.error("Failed to reach serverless email function:", error);
+        console.error(error);
         errorBox.textContent = "Could not connect to the registration email service.";
         errorBox.classList.remove('hidden');
     }
-}
+};
 
-// Step 2: Verify the 2FA Code and permanently commit to the Postgres DB
 async function verifyPortal2FACode(username) {
     const userInputCode = prompt("🔒 A 6-digit verification code was sent to your email. Please enter it below to confirm your account:");
     const errorBox = document.getElementById('login-error');
@@ -80,20 +113,19 @@ async function verifyPortal2FACode(username) {
 
     const pendingData = localStorage.getItem('pending_2fa_session');
     if (!pendingData) {
-        alert("Session timed out. Please register again.");
+        alert("Session expired. Please attempt registration again.");
         return;
     }
 
     const parsedData = JSON.parse(pendingData);
 
-    // Verify 2FA code match locally first
     if (userInputCode.trim() !== parsedData.code) {
-        alert("❌ Invalid verification code. Please check your spelling or try registering again.");
+        alert("❌ Invalid verification token string match. Registration aborted.");
         localStorage.removeItem('pending_2fa_session');
         return;
     }
 
-    // Code matches! Now post the verified parameters directly to your Postgres DB endpoint
+    // Push payload down to live serverless database route
     try {
         const response = await fetch('/api/db-signup', {
             method: 'POST',
@@ -111,34 +143,38 @@ async function verifyPortal2FACode(username) {
 
         if (result.success) {
             localStorage.removeItem('pending_2fa_session');
-            alert(`✨ 2FA Verified & Database Saved! Registered successfully as: ${parsedData.role}. You can now log in.`);
+            alert(`✨ Account committed successfully to cloud Postgres DB! You can now log in.`);
             toggleAuthView(false);
             document.getElementById('login-username').value = username;
         } else {
-            errorBox.textContent = "Database Error: " + result.error;
+            errorBox.textContent = "Cloud DB Sync Error: " + result.error;
             errorBox.classList.remove('hidden');
             localStorage.removeItem('pending_2fa_session');
         }
     } catch (error) {
-        console.error("Database connection error during registration:", error);
-        errorBox.textContent = "Could not connect to the database registry system.";
+        console.error(error);
+        errorBox.textContent = "Failed connecting profile setup down to data registry services.";
         errorBox.classList.remove('hidden');
     }
 }
 
-// Step 3: Handle signing into an account via Vercel Postgres
-async function handlePortalLoginVerification() {
+
+// =========================================================================
+// 4. SECURE AUTHENTICATION LOGIN HANDLER
+// =========================================================================
+
+window.handlePortalLoginVerification = async function() {
     const userInput = document.getElementById('login-username').value.trim().toLowerCase();
     const passInput = document.getElementById('login-password').value.trim();
     const errorBox = document.getElementById('login-error');
 
     if (!userInput || !passInput) {
-        errorBox.textContent = "Please enter both your email and password.";
+        errorBox.textContent = "Please fill in all tracking credentials.";
         errorBox.classList.remove('hidden');
         return;
     }
 
-    // Default static fallback structural credential check
+    // Fallback account layout bypass
     if (userInput === 'student' && passInput === 'password') {
         localStorage.setItem('activeSession', 'Alex Mercer');
         localStorage.setItem('activePathway', 'Digital Production (Student View)');
@@ -146,7 +182,6 @@ async function handlePortalLoginVerification() {
         return;
     }
 
-    // Authenticate credentials against your live backend Postgres DB endpoint
     try {
         const response = await fetch('/api/db-login', {
             method: 'POST',
@@ -157,7 +192,6 @@ async function handlePortalLoginVerification() {
         const result = await response.json();
 
         if (result.success) {
-            // Keep local temporary variables strictly for tracking active visual states on dashboards
             localStorage.setItem('activeSession', result.name);
             localStorage.setItem('activePathway', `Portal Role: ${result.role}`);
             window.location.href = './dashboard.html';
@@ -166,8 +200,8 @@ async function handlePortalLoginVerification() {
             errorBox.classList.remove('hidden');
         }
     } catch (error) {
-        console.error("Database authentication connection error:", error);
-        errorBox.textContent = "Could not verify credentials with the database server.";
+        console.error(error);
+        errorBox.textContent = "Could not authenticate your access records with the database.";
         errorBox.classList.remove('hidden');
     }
-}
+};

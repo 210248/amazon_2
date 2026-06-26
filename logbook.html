@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Hub - Placement Logbook</title>
@@ -20,57 +21,64 @@
         }
     </script>
 </head>
-<body class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6">
+<body id="dashboard-global-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans transition-all duration-200">
 
-    <div class="max-w-4xl mx-auto space-y-6">
-        <div class="bg-[#143454] text-white p-6 rounded-xl border border-slate-700 shadow-sm">
-            <span class="bg-[#e47911] text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded">
-                Data Registry Port
-            </span>
-            <h1 class="text-xl md:text-2xl font-bold mt-1 font-display tracking-tight">Track Placement Orders (Logbook)</h1>
-            <p class="text-slate-300 text-xs mt-1">Log your shifts and reflections directly into local persistent cache files.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Log New Entry</h2>
-                
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Date of Shift</label>
-                    <input id="log-date" type="date" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" />
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Hours Completed</label>
-                    <input id="log-hours" type="number" step="0.5" min="0" max="12" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. 7.5" />
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Daily Reflection Summary</label>
-                    <textarea id="log-reflection" rows="4" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="What tasks or frameworks did you implement today?"></textarea>
-                </div>
-
-                <button onclick="addLogEntry()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2 rounded-lg text-xs font-bold transition tracking-wide cursor-pointer">
-                    Commit Entry to Registry
-                </button>
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col mx-auto p-6 transition-all duration-300 bg-[#eaeded]">
+        
+        <div class="max-w-4xl mx-auto w-full space-y-6">
+            <div class="bg-[#143454] text-white p-6 rounded-xl border border-slate-700 shadow-sm">
+                <span class="bg-[#e47911] text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded">
+                    Data Registry Port
+                </span>
+                <h1 class="text-xl md:text-2xl font-bold mt-1 font-display tracking-tight">Track Placement Orders (Logbook)</h1>
+                <p class="text-slate-300 text-xs mt-1">Log your shifts and reflections directly into local persistent cache files.</p>
             </div>
 
-            <div class="md:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Log History Database</h2>
-                    <span id="total-badge" class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-[10px] font-mono font-bold">Total: 0 hrs</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Log New Entry</h2>
+                    
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Date of Shift</label>
+                        <input id="log-date" type="date" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" />
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Hours Completed</label>
+                        <input id="log-hours" type="number" step="0.5" min="0" max="12" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. 7.5" />
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1 uppercase">Daily Reflection Summary</label>
+                        <textarea id="log-reflection" rows="4" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="What tasks or frameworks did you implement today?"></textarea>
+                    </div>
+
+                    <button onclick="addLogEntry()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2 rounded-lg text-xs font-bold transition tracking-wide cursor-pointer">
+                        Commit Entry to Registry
+                    </button>
                 </div>
 
-                <div id="log-list-container" class="space-y-2 max-h-[360px] overflow-y-auto pr-1 text-xs">
-                    <p class="text-slate-400 text-center italic py-8">No work placement logs registered in local database yet.</p>
+                <div class="md:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Log History Database</h2>
+                        <span id="total-badge" class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-[10px] font-mono font-bold">Total: 0 hrs</span>
+                    </div>
+
+                    <div id="log-list-container" class="space-y-2 max-h-[360px] overflow-y-auto pr-1 text-xs">
+                        <p class="text-slate-400 text-center italic py-8">No work placement logs registered in local database yet.</p>
+                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // Load existing logs on startup
-        document.addEventListener('DOMContentLoaded', loadLogsFromCache);
+        // Initialize logic and style syncing parameters on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            applyGlobalAccessibilityStateTokens();
+            loadLogsFromCache();
+        });
 
         function getActiveUser() {
             return localStorage.getItem('activeSession') || 'default_student';
@@ -89,10 +97,8 @@
             const username = getActiveUser();
             const storageKey = `logs_${username}`;
             
-            // Fetch array or build a new one
             const records = JSON.parse(localStorage.getItem(storageKey)) || [];
             
-            // Push structured map entry
             records.push({
                 id: Date.now(),
                 date: dateVal,
@@ -102,7 +108,6 @@
 
             localStorage.setItem(storageKey, JSON.stringify(records));
 
-            // Clean inputs and reload layout list
             document.getElementById('log-date').value = '';
             document.getElementById('log-hours').value = '';
             document.getElementById('log-reflection').value = '';
@@ -122,7 +127,6 @@
                 return;
             }
 
-            // Sort entries descending by date string
             records.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             let totalHours = 0;
@@ -144,9 +148,38 @@
             });
 
             totalBadge.textContent = `Total: ${totalHours} hrs`;
-            
-            // Mirror total aggregate directly to master cache string for dashboard access
             localStorage.setItem(`total_hours_${username}`, totalHours);
+        }
+
+        function applyGlobalAccessibilityStateTokens() {
+            const body = document.getElementById('dashboard-global-body');
+            const textScale = localStorage.getItem('access_text_scale') || 'small';
+            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
+
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (textScale === 'large') body.classList.add('text-base');
+            else if (textScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            if (contrastMode) {
+                body.style.filter = "contrast(1.15) saturate(1.05)";
+            } else {
+                body.style.filter = "none";
+            }
+
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
         }
     </script>
 </body>

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Hub - Accessibility Settings</title>
@@ -21,49 +22,64 @@
 </head>
 <body id="access-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6 transition-all duration-200">
 
-    <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
-        <span class="bg-blue-600 text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
-            Portal Control Station
-        </span>
-        <h2 class="text-xl font-bold mt-2 font-display tracking-tight text-slate-900 border-b pb-3 mb-4">
-            Accessibility Options
-        </h2>
+    <div id="page-wrapper" class="w-full min-h-screen transition-all duration-300">
         
-        <div class="space-y-6">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide">Adjust Scaling Text Size</label>
-                <div class="flex gap-2">
-                    <button onclick="setBaseTextScale('small')" class="px-4 py-2 border rounded-lg text-xs font-medium hover:bg-slate-50 transition">Standard</button>
-                    <button onclick="setBaseTextScale('large')" class="px-4 py-2 border rounded-lg text-sm font-bold hover:bg-slate-50 transition">Large text</button>
-                    <button onclick="setBaseTextScale('xlarge')" class="px-4 py-2 border rounded-lg text-base font-extrabold hover:bg-slate-50 transition">Extra Large</button>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between border-t pt-4">
+        <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
+            <span class="bg-blue-600 text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
+                Portal Control Station
+            </span>
+            <h2 class="text-xl font-bold mt-2 font-display tracking-tight text-slate-900 border-b pb-3 mb-4">
+                Accessibility & View Options
+            </h2>
+            
+            <div class="space-y-6">
                 <div>
-                    <p class="text-xs font-bold text-slate-700 uppercase tracking-wide">High Contrast Mode</p>
-                    <p class="text-[11px] text-slate-500">Inverts interface layers to assist optimal visibility.</p>
+                    <label class="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wide">Adjust Scaling Text Size</label>
+                    <div class="flex gap-2">
+                        <button onclick="setBaseTextScale('small')" class="px-4 py-2 border rounded-lg text-xs font-medium hover:bg-slate-50 transition">Standard</button>
+                        <button onclick="setBaseTextScale('large')" class="px-4 py-2 border rounded-lg text-sm font-bold hover:bg-slate-50 transition">Large text</button>
+                        <button onclick="setBaseTextScale('xlarge')" class="px-4 py-2 border rounded-lg text-base font-extrabold hover:bg-slate-50 transition">Extra Large</button>
+                    </div>
                 </div>
-                <button id="contrast-toggle-btn" onclick="toggleContrastRenderingMode()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-4 py-2 rounded-lg transition">
-                    Enable Mode
-                </button>
+
+                <div class="flex items-center justify-between border-t pt-4">
+                    <div>
+                        <p class="text-xs font-bold text-slate-700 uppercase tracking-wide">High Contrast Mode</p>
+                        <p class="text-[11px] text-slate-500">Inverts interface layers to assist optimal visibility.</p>
+                    </div>
+                    <button id="contrast-toggle-btn" onclick="toggleContrastRenderingMode()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-4 py-2 rounded-lg transition">
+                        Enable Mode
+                    </button>
+                </div>
+
+                <div class="border-t pt-4 space-y-2">
+                    <div>
+                        <p class="text-xs font-bold text-slate-700 uppercase tracking-wide">Responsive View Simulation</p>
+                        <p class="text-[11px] text-slate-500">Preview and test how the portal scales across mobile phone and tablet layouts.</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                        <button onclick="setDeviceView('phone')" class="bg-white hover:bg-slate-50 shadow-sm text-xs font-semibold py-2 text-slate-700 rounded-lg transition cursor-pointer text-center">📱 Phone</button>
+                        <button onclick="setDeviceView('tablet')" class="bg-white hover:bg-slate-50 shadow-sm text-xs font-semibold py-2 text-slate-700 rounded-lg transition cursor-pointer text-center">📟 Tablet</button>
+                        <button onclick="setDeviceView('desktop')" class="bg-white hover:bg-slate-50 shadow-sm text-xs font-semibold py-2 text-slate-700 rounded-lg transition cursor-pointer text-center">💻 Desktop</button>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Apply values saved in cache on startup
             const savedScale = localStorage.getItem('access_text_scale') || 'small';
             const savedContrast = localStorage.getItem('access_contrast_mode') === 'true';
 
             setBaseTextScale(savedScale);
             if (savedContrast) renderContrastStyles(true);
+            applySavedDeviceView(); // Reads your phone/tablet layout setting on load
         });
 
         function setBaseTextScale(scale) {
             const body = document.getElementById('access-body');
-            // Reset text sizes classes
             body.classList.remove('text-sm', 'text-base', 'text-lg');
 
             if (scale === 'large') {
@@ -96,6 +112,28 @@
                 button.textContent = "Enable Mode";
                 button.className = "bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-4 py-2 rounded-lg transition";
                 localStorage.setItem('access_contrast_mode', 'false');
+            }
+        }
+
+        // Handles active UI wrapper constraint updates
+        function setDeviceView(viewType) {
+            localStorage.setItem('device_view', viewType);
+            applySavedDeviceView();
+        }
+
+        function applySavedDeviceView() {
+            const wrapper = document.getElementById('page-wrapper');
+            if (!wrapper) return;
+
+            const currentView = localStorage.getItem('device_view') || 'desktop';
+            wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'mx-auto', 'border-x', 'border-slate-300', 'shadow-2xl', 'bg-white');
+
+            if (currentView === 'phone') {
+                wrapper.classList.add('max-w-[375px]', 'mx-auto', 'border-x', 'border-slate-300', 'shadow-2xl');
+            } else if (currentView === 'tablet') {
+                wrapper.classList.add('max-w-[768px]', 'mx-auto', 'border-x', 'border-slate-300', 'shadow-2xl');
+            } else {
+                wrapper.classList.add('max-w-full');
             }
         }
     </script>

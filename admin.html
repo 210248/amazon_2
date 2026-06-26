@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Amazon Placements - System Administration Control Panel</title>
@@ -19,76 +20,80 @@
         }
     </script>
 </head>
-<body class="bg-slate-900 text-slate-100 antialiased font-sans min-h-screen flex flex-col">
+<body id="access-body" class="bg-slate-900 text-slate-100 antialiased font-sans min-h-screen flex flex-col transition-all duration-200">
 
-    <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-lg">
-        <div class="flex items-center gap-3">
-            <span class="text-xl font-bold text-[#ff9900] tracking-tight italic">amazon</span>
-            <span class="text-xs bg-amber-500/10 text-amber-400 font-mono border border-amber-500/20 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Root Control Panel</span>
-        </div>
-        <div class="flex items-center gap-4 text-xs">
-            <div class="text-right">
-                <p class="font-bold text-slate-200">System Root Admin</p>
-                <p class="text-[10px] text-slate-400 font-mono">Status: Live Access Mode</p>
-            </div>
-            <button onclick="window.location.href='./index.html';" class="bg-slate-800 hover:bg-red-950 hover:text-red-400 border border-slate-700 px-3 py-1.5 rounded transition text-xs font-medium cursor-pointer">
-                Exit Panel
-            </button>
-        </div>
-    </header>
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col transition-all duration-300">
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
-        
-        <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div class="md:col-span-2">
-                <h2 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                    🔑 School Authorization Passcode Manager
-                </h2>
-                <p class="text-slate-400 text-xs mt-0.5">Students must enter this matching passcode string on signup before receiving a Resend 2FA authentication token link.</p>
+        <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between shadow-lg">
+            <div class="flex items-center gap-3">
+                <span class="text-xl font-bold text-[#ff9900] tracking-tight italic">amazon</span>
+                <span class="text-xs bg-amber-500/10 text-amber-400 font-mono border border-amber-500/20 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Root Control Panel</span>
             </div>
-            <div class="flex gap-2 justify-end">
-                <input type="text" id="admin-school-code-input" placeholder="e.g. AMZN-TLEVEL" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 w-full font-mono max-w-[180px]" />
-                <button onclick="setSchoolAuthCode()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0">
-                    Update Code
+            <div class="flex items-center gap-4 text-xs">
+                <div class="text-right">
+                    <p class="font-bold text-slate-200">System Root Admin</p>
+                    <p class="text-[10px] text-slate-400 font-mono">Status: Live Access Mode</p>
+                </div>
+                <button onclick="window.location.href='./index.html';" class="bg-slate-800 hover:bg-red-950 hover:text-red-400 border border-slate-700 px-3 py-1.5 rounded transition text-xs font-medium cursor-pointer">
+                    Exit Panel
                 </button>
             </div>
-        </div>
-        
-        <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm">
-            <h2 class="text-lg font-bold text-white tracking-tight">Registered Portal Users Monitor</h2>
-            <p class="text-slate-400 text-xs mt-0.5">Real-time status tracking inside browser local storage keys.</p>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
             
-            <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-mono text-[10px] bg-slate-900/50">
-                            <th class="p-3">Full Name</th>
-                            <th class="p-3">Registered Email</th>
-                            <th class="p-3">Assigned Role</th>
-                            <th class="p-3">Cached Password Token</th>
-                            <th class="p-3 text-right">Database Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-users-table" class="divide-y divide-slate-800">
-                    </tbody>
-                </table>
+            <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="md:col-span-2">
+                    <h2 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                        🔑 School Authorization Passcode Manager
+                    </h2>
+                    <p class="text-slate-400 text-xs mt-0.5">Students must enter this matching passcode string on signup before receiving a Resend 2FA authentication token link.</p>
+                </div>
+                <div class="flex gap-2 justify-end">
+                    <input type="text" id="admin-school-code-input" placeholder="e.g. AMZN-TLEVEL" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-3 py-2 outline-none focus:border-amber-500 w-full font-mono max-w-[180px]" />
+                    <button onclick="setSchoolAuthCode()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0">
+                        Update Code
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <div class="bg-red-950/20 border border-red-900/40 p-6 rounded-xl flex items-center justify-between gap-4">
-            <div>
-                <h3 class="text-sm font-bold text-red-400">Emergency System Factory Reset</h3>
-                <p class="text-slate-400 text-xs mt-1">This deletes all custom accounts, hours, entries, and chat logs stored inside the local environment.</p>
+            
+            <div class="bg-slate-950/40 p-6 rounded-xl border border-slate-800 shadow-sm">
+                <h2 class="text-lg font-bold text-white tracking-tight">Registered Portal Users Monitor</h2>
+                <p class="text-slate-400 text-xs mt-0.5">Real-time status tracking inside browser local storage keys.</p>
+                
+                <div class="mt-4 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-mono text-[10px] bg-slate-900/50">
+                                <th class="p-3">Full Name</th>
+                                <th class="p-3">Registered Email</th>
+                                <th class="p-3">Assigned Role</th>
+                                <th class="p-3">Cached Password Token</th>
+                                <th class="p-3 text-right">Database Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table" class="divide-y divide-slate-800">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <button onclick="wipeSystemDatabase()" class="bg-red-900 hover:bg-red-800 text-white text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shadow-md">
-                Wipe Local Environment Data
-            </button>
-        </div>
-    </main>
 
-    <footer class="p-6 text-center text-[11px] text-slate-500 font-mono border-t border-slate-950">
-        © 2026 AmazonPlacements UK Admin Engine • Session Data Key Verified
-    </footer>
+            <div class="bg-red-950/20 border border-red-900/40 p-6 rounded-xl flex items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-red-400">Emergency System Factory Reset</h3>
+                    <p class="text-slate-400 text-xs mt-1">This deletes all custom accounts, hours, entries, and chat logs stored inside the local environment.</p>
+                </div>
+                <button onclick="wipeSystemDatabase()" class="bg-red-900 hover:bg-red-800 text-white text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shadow-md">
+                    Wipe Local Environment Data
+                </button>
+            </div>
+        </main>
+
+        <footer class="p-6 text-center text-[11px] text-slate-500 font-mono border-t border-slate-950">
+            © 2026 AmazonPlacements UK Admin Engine • Session Data Key Verified
+        </footer>
+
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -96,31 +101,63 @@
             // Load current registration code into view placeholder input
             const activeCode = localStorage.getItem('valid_school_auth_code') || "AMZN-TLEVEL";
             document.getElementById('admin-school-code-input').value = activeCode;
+            
+            // Read active global view configs
+            applySavedGlobalStyles();
         });
 
+        function applySavedGlobalStyles() {
+            // Apply text scaling profile
+            const savedScale = localStorage.getItem('access_text_scale') || 'small';
+            const body = document.getElementById('access-body');
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (savedScale === 'large') body.classList.add('text-base');
+            else if (savedScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            // Apply high contrast styling parameters if active
+            const savedContrast = localStorage.getItem('access_contrast_mode') === 'true';
+            if (savedContrast) {
+                body.classList.replace('bg-slate-900', 'bg-black');
+                body.classList.replace('text-slate-100', 'text-yellow-400');
+            }
+
+            // Apply active device simulation container framework bounds
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'mx-auto', 'border-x', 'border-slate-800', 'shadow-2xl');
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'mx-auto', 'border-x', 'border-slate-800', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'mx-auto', 'border-x', 'border-slate-800', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
+        }
+
         function setSchoolAuthCode() {
-    const inputVal = document.getElementById('admin-school-code-input').value.trim();
-    if (!inputVal) {
-        alert("Authorization string value cannot be empty.");
-        return;
-    }
-    
-    // Save it directly to memory
-    localStorage.setItem('valid_school_auth_code', inputVal);
-    
-    // Target the button directly using its ID or text to change UI status
-    const updateBtn = document.querySelector('button[onclick="setSchoolAuthCode()"]');
-    if (updateBtn) {
-        const originalText = updateBtn.textContent;
-        updateBtn.textContent = "Saved! ✓";
-        updateBtn.className = "bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition shrink-0";
-        
-        setTimeout(() => {
-            updateBtn.textContent = originalText;
-            updateBtn.className = "bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0";
-        }, 2000);
-    }
-}
+            const inputVal = document.getElementById('admin-school-code-input').value.trim();
+            if (!inputVal) {
+                alert("Authorization string value cannot be empty.");
+                return;
+            }
+            
+            localStorage.setItem('valid_school_auth_code', inputVal);
+            
+            const updateBtn = document.querySelector('button[onclick="setSchoolAuthCode()"]');
+            if (updateBtn) {
+                const originalText = updateBtn.textContent;
+                updateBtn.textContent = "Saved! ✓";
+                updateBtn.className = "bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition shrink-0";
+                
+                setTimeout(() => {
+                    updateBtn.textContent = originalText;
+                    updateBtn.className = "bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition cursor-pointer shrink-0";
+                }, 2000);
+            }
+        }
 
         function loadSystemProfiles() {
             const tableBody = document.getElementById('admin-users-table');
@@ -130,7 +167,7 @@
 
             for (let i = 0; i < localStorage.length; i++) {
                 const storageKey = localStorage.key(i);
-                if (storageKey.startsWith('user_email_')) {
+                if (storageKey && storageKey.startsWith('user_email_')) {
                     accountCount++;
                     const userRecord = JSON.parse(localStorage.getItem(storageKey));
                     

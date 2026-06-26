@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Hub - Profile Settings</title>
@@ -19,45 +20,51 @@
         }
     </script>
 </head>
-<body class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6">
+<body id="dashboard-global-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans transition-all duration-200">
 
-    <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-md">
-        <span class="bg-[#e47911] text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
-            User Profile Configuration
-        </span>
-        <h2 class="text-xl font-bold mt-2 font-display tracking-tight text-slate-900 border-b pb-3 mb-4">
-            Manage Account Registry
-        </h2>
+    <div id="page-wrapper" class="w-full min-h-screen flex flex-col mx-auto p-6 transition-all duration-300 bg-[#eaeded]">
         
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Student Full Name</label>
-                <input id="manage-name" type="text" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. Taylor Brooke" />
-            </div>
+        <div class="max-w-2xl mx-auto w-full bg-white p-6 rounded-2xl border border-slate-200 shadow-md my-auto">
+            <span class="bg-[#e47911] text-white font-bold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-mono">
+                User Profile Configuration
+            </span>
+            <h2 class="text-xl font-bold mt-2 font-display tracking-tight text-slate-900 border-b pb-3 mb-4">
+                Manage Account Registry
+            </h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Student Full Name</label>
+                    <input id="manage-name" type="text" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. Taylor Brooke" />
+                </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">T-Level Technical Pathway Area</label>
-                <select id="manage-pathway" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#ff9900]">
-                    <option value="Digital Production, Design & Development">Digital Production, Design & Development</option>
-                    <option value="Management and Administration">Management and Administration</option>
-                    <option value="Design, Surveying and Planning for Construction">Design, Surveying and Planning for Construction</option>
-                    <option value="Health & Science Sector Pathways">Health & Science Sector Pathways</option>
-                </select>
-            </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">T-Level Technical Pathway Area</label>
+                    <select id="manage-pathway" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-[#ff9900]">
+                        <option value="Digital Production, Design & Development">Digital Production, Design & Development</option>
+                        <option value="Management and Administration">Management and Administration</option>
+                        <option value="Design, Surveying and Planning for Construction">Design, Surveying and Planning for Construction</option>
+                        <option value="Health & Science Sector Pathways">Health & Science Sector Pathways</option>
+                    </select>
+                </div>
 
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-slate-700">
-                <p class="font-semibold text-amber-800">Local Storage Sync</p>
-                <p class="text-[11px] text-slate-600 mt-0.5">Saving updates changes instantly across all dashboard files reading active session cache keys.</p>
-            </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-slate-700">
+                    <p class="font-semibold text-amber-800">Local Storage Sync</p>
+                    <p class="text-[11px] text-slate-600 mt-0.5">Saving updates changes instantly across all dashboard files reading active session cache keys.</p>
+                </div>
 
-            <button onclick="saveProfileChanges()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2 rounded-lg text-xs font-bold transition cursor-pointer">
-                Save and Synchronize Changes
-            </button>
+                <button onclick="saveProfileChanges()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2 rounded-lg text-xs font-bold transition cursor-pointer">
+                    Save and Synchronize Changes
+                </button>
+            </div>
         </div>
+
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            applyGlobalAccessibilityStateTokens();
+            
             const sessionUser = localStorage.getItem('activeSession') || 'Taylor Brooke';
             const sessionPathway = localStorage.getItem('activePathway') || 'Digital Production, Design & Development';
             
@@ -77,6 +84,37 @@
             localStorage.setItem('activeSession', updatedName);
             localStorage.setItem('activePathway', updatedPathway);
             alert("Profile metadata updated successfully!");
+        }
+
+        function applyGlobalAccessibilityStateTokens() {
+            const body = document.getElementById('dashboard-global-body');
+            const textScale = localStorage.getItem('access_text_scale') || 'small';
+            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
+
+            body.classList.remove('text-sm', 'text-base', 'text-lg');
+            if (textScale === 'large') body.classList.add('text-base');
+            else if (textScale === 'xlarge') body.classList.add('text-lg');
+            else body.classList.add('text-sm');
+
+            if (contrastMode) {
+                body.style.filter = "contrast(1.15) saturate(1.05)";
+            } else {
+                body.style.filter = "none";
+            }
+
+            const wrapper = document.getElementById('page-wrapper');
+            if (wrapper) {
+                const currentView = localStorage.getItem('device_view') || 'desktop';
+                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                
+                if (currentView === 'phone') {
+                    wrapper.classList.add('max-w-[375px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else if (currentView === 'tablet') {
+                    wrapper.classList.add('max-w-[768px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
+                } else {
+                    wrapper.classList.add('max-w-full');
+                }
+            }
         }
     </script>
 </body>

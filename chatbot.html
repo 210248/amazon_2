@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>T-Level Hub - Aria Chat Coach</title>
@@ -20,41 +21,76 @@
         }
     </script>
 </head>
-<body class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6">
+<body id="dashboard-global-body" class="bg-[#eaeded] text-[#111111] antialiased font-sans p-6">
 
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col h-[600px]">
-        
-        <div class="bg-[#232f3e] p-4 text-white flex items-center justify-between border-b border-slate-700">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-[#ff9900] flex items-center justify-center font-bold text-slate-950 font-display">
-                    A
+    <div id="page-wrapper" class="w-full min-h-screen flex items-center justify-center mx-auto transition-all duration-300">
+        <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-md overflow-hidden flex flex-col h-[600px] w-full">
+            
+            <div class="bg-[#232f3e] p-4 text-white flex items-center justify-between border-b border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[#ff9900] flex items-center justify-center font-bold text-slate-950 font-display">
+                        A
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-bold tracking-tight">Customer Service Chat (Aria Coach)</h1>
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block animate-pulse"></span>
+                            T-Level Advisor Portal Active
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-sm font-bold tracking-tight">Customer Service Chat (Aria Coach)</h1>
-                    <p class="text-[10px] text-emerald-400 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block animate-pulse"></span>
-                        T-Level Advisor Portal Active
-                    </p>
-                </div>
-            </div>
-            <button onclick="clearChatHistory()" class="text-[10px] bg-slate-800 hover:bg-red-950 hover:text-red-400 border border-slate-700 px-2 py-1 rounded font-mono transition cursor-pointer">
-                Clear Logs
-            </button>
-        </div>
-
-        <div id="chat-messages-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+                <button onclick="clearChatHistory()" class="text-[10px] bg-slate-800 hover:bg-red-950 hover:text-red-400 border border-slate-700 px-2 py-1 rounded font-mono transition cursor-pointer">
+                    Clear Logs
+                </button>
             </div>
 
-        <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
-            <input id="chat-input" type="text" onkeydown="if(event.key === 'Enter') dispatchUserMessage()" placeholder="Ask about 'hours', 'rules', 'XP', 'industry placements'..." class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#ff9900]" />
-            <button onclick="dispatchUserMessage()" class="bg-[#ff9900] hover:bg-[#e48900] text-slate-900 font-bold px-4 rounded-xl text-xs transition cursor-pointer">
-                Send
-            </button>
+            <div id="chat-messages-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
+                </div>
+
+            <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
+                <input id="chat-input" type="text" onkeydown="if(event.key === 'Enter') dispatchUserMessage()" placeholder="Ask about 'hours', 'rules', 'XP', 'industry placements'..." class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#ff9900]" />
+                <button onclick="dispatchUserMessage()" class="bg-[#ff9900] hover:bg-[#e48900] text-slate-900 font-bold px-4 rounded-xl text-xs transition cursor-pointer">
+                    Send
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', initializeChatWorkspace);
+        // Global variables for safety rules
+        let loadedBlocklist = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyGlobalAccessibilityStateTokens();
+            initializeChatWorkspace();
+            loadBlocklistFile();
+        });
+
+        // 1. Fetch blocklist terms on initialization
+        async function loadBlocklistFile() {
+            try {
+                const response = await fetch('./blocklist.txt');
+                const textData = await response.text();
+                loadedBlocklist = textData
+                    .split('\n')
+                    .map(word => word.trim().toLowerCase())
+                    .filter(word => word.length > 0);
+                console.log(`Compliance Guardrails Active: ${loadedBlocklist.length} terms loaded.`);
+            } catch (error) {
+                console.error("Could not load blocklist.txt configuration file:", error);
+            }
+        }
+
+        // 2. Scan text function
+        function containsProhibitedContent(textContent) {
+            const lowerText = textContent.toLowerCase();
+            for (let blockedWord of loadedBlocklist) {
+                if (lowerText.includes(blockedWord)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         function getStudentName() {
             const sessionName = localStorage.getItem('activeSession') || 'Taylor Brooke';
@@ -70,7 +106,6 @@
                 document.getElementById('chat-messages-box').innerHTML = existingHistory;
                 scrollToBottom();
             } else {
-                // Drop initial welcoming phrase greeting the matched user context
                 appendChatBubble(`Hello ${getStudentName()}! I'm Aria, your industry placement diagnostic coach. Ask me anything about your hours requirement, logbook submissions, or placement policies!`, 'bot');
             }
         }
@@ -98,20 +133,26 @@
             box.appendChild(wrapper);
             scrollToBottom();
             
-            // Sync log block to cache memory
             const username = localStorage.getItem('activeSession') || 'default_user';
             localStorage.setItem(`chat_history_${username}`, box.innerHTML);
         }
 
+        // 3. Updated intercept handling logic
         function dispatchUserMessage() {
             const input = document.getElementById('chat-input');
             const query = input.value.trim();
             if (!query) return;
 
+            // Run security compliance analysis check before logging anything to the view
+            if (containsProhibitedContent(query)) {
+                alert("System Warning: Your message contains terms prohibited within the portal's compliance registry.");
+                input.value = ''; // Safely clear the input field
+                return; // Kill execution stream
+            }
+
             appendChatBubble(query, 'user');
             input.value = '';
 
-            // Run simple simulated match response after a brief calculation lag
             setTimeout(() => {
                 const response = matchBotResponse(query.toLowerCase());
                 appendChatBubble(response, 'bot');
