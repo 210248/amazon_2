@@ -93,7 +93,8 @@ window.handlePortalRegistration = async function() {
             body: JSON.stringify({
                 email: user, 
                 name: name,
-                pathway: `Your 2FA Verification Security Code is: ${token2FA}`
+                // --- CHANGE THIS LINE ---
+                verificationCode: token2FA 
             }),
         });
 
