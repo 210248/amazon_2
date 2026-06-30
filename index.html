@@ -66,37 +66,29 @@
 
             <div id="signup-section" class="hidden">
                 <h2 class="text-xl font-bold mb-1 font-display text-slate-900">Create Account</h2>
-                <p class="text-slate-500 text-xs mb-4">Register your tracker profile</p>
+                <p class="text-slate-500 text-xs mb-4">Verify your email to instantiate your portal profile</p>
                 
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Full Name</label>
-                        <input id="signup-name" type="text" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="Alex Mercer" />
+                    <div id="signup-step-email">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">School / Institution Email</label>
+                        <input id="signup-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="alex@school.ac.uk" />
+                        <button onclick="sendVerificationToken()" class="w-full mt-3 bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold transition cursor-pointer">
+                            Send Verification Code
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Email Address</label>
-                        <input id="signup-email" type="email" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="alex@school.uk" />
+
+                    <div id="signup-step-token" class="hidden space-y-3">
+                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-800">
+                            A verification code has been generated and dispatched to your email address.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">6-Digit Verification Token</label>
+                            <input id="signup-token" type="text" maxlength="6" class="w-full text-center tracking-widest text-lg font-bold px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="123456" />
+                        </div>
+                        <button onclick="handlePortalRegistrationVerify()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-bold transition cursor-pointer">
+                            Verify & Finish Registration
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Account Type / Role</label>
-                        <select id="signup-role" onchange="handleRoleChange()" class="w-full px-4 py-2 border border-slate-200 rounded-xl bg-white outline-none focus:ring-2 focus:ring-[#ff9900] text-sm text-slate-700">
-                            <option value="Student">Student (No code required)</option>
-                            <option value="Teacher">Teacher / Tutor</option>
-                            <option value="Parent">Parent / Guardian</option>
-                            <option value="IT Staff">IT Support Staff</option>
-                        </select>
-                    </div>
-                    <div id="school-code-box" class="hidden">
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase text-amber-600">School Authorization Code</label>
-                        <input id="signup-code" type="text" class="w-full px-4 py-2 border border-amber-300 bg-amber-50/30 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="e.g. TLEVEL2026" />
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase">Password</label>
-                        <input id="signup-password" type="password" class="w-full px-4 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900]" placeholder="••••••••" />
-                    </div>
-                    <button onclick="handlePortalRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold transition cursor-pointer">
-                        Create Portal Profile
-                    </button>
                 </div>
                 <p class="text-xs text-center text-slate-500 mt-4">Already have a profile? <button onclick="toggleAuthView(false)" class="text-blue-600 hover:underline font-medium cursor-pointer bg-transparent border-0 outline-none">Sign in instead</button></p>
             </div>
@@ -113,67 +105,90 @@
             const errorBox = document.getElementById('login-error');
             if(errorBox) errorBox.classList.add('hidden');
             
+            // Clear inputs when toggling
+            document.getElementById('signup-email').value = '';
+            const tokenInput = document.getElementById('signup-token');
+            if(tokenInput) tokenInput.value = '';
+
             if (showSignup) {
                 document.getElementById('signin-section').classList.add('hidden');
                 document.getElementById('signup-section').classList.remove('hidden');
-                handleRoleChange();
+                document.getElementById('signup-step-email').classList.remove('hidden');
+                document.getElementById('signup-step-token').classList.add('hidden');
             } else {
                 document.getElementById('signup-section').classList.add('hidden');
                 document.getElementById('signin-section').classList.remove('hidden');
             }
         }
 
-        function handleRoleChange() {
-            const role = document.getElementById('signup-role').value;
-            const codeBox = document.getElementById('school-code-box');
-            if (role === 'Student') {
-                codeBox.classList.add('hidden');
-            } else {
-                codeBox.classList.remove('hidden');
-            }
-        }
-
         function handleGuestAccess() {
-            // Keep a random dummy token to prove this is a guest
             localStorage.setItem('system_auth_checksum', 'guest_mode_active');
             localStorage.setItem('activeSession', 'Guest User');
             localStorage.setItem('activePathway', 'Temporary View (No Saved Data)');
             window.location.href = './dashboard.html';
         }
 
-        // SECURE REGISTRATION VIA SERVER API
-        async function handlePortalRegistration() {
-            const name = document.getElementById('signup-name').value.trim();
+        // DISPATCH SECURE EMAIL TOKEN FROM SERVERLESS ROUTE
+        async function sendVerificationToken() {
             const email = document.getElementById('signup-email').value.trim().toLowerCase();
-            const role = document.getElementById('signup-role').value;
-            const code = document.getElementById('signup-code').value.trim();
-            const pass = document.getElementById('signup-password').value.trim();
             const errorBox = document.getElementById('login-error');
+            errorBox.classList.add('hidden');
 
-            if (!name || !email || !pass) {
-                errorBox.textContent = "Please fill in all standard registration fields.";
+            if (!email || !email.includes('@')) {
+                errorBox.textContent = "Please input a valid institutional email address.";
                 errorBox.classList.remove('hidden');
                 return;
             }
 
             try {
-                // Submit payloads over SSL straight to the encrypted server backend
+                const response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Advance frontend sequence state to input code
+                    document.getElementById('signup-step-email').classList.add('hidden');
+                    document.getElementById('signup-step-token').classList.remove('hidden');
+                } else {
+                    errorBox.textContent = result.error || "Failed sending verification credentials.";
+                    errorBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorBox.textContent = "Error communicating with endpoint service: /api/send-email";
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        // EXECUTE SECURE PROFILE PROVISION ON DATABASE
+        async function handlePortalRegistrationVerify() {
+            const email = document.getElementById('signup-email').value.trim().toLowerCase();
+            const token = document.getElementById('signup-token').value.trim();
+            const errorBox = document.getElementById('login-error');
+
+            if (!token || token.length !== 6) {
+                errorBox.textContent = "Please provide the complete 6-digit access code.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            try {
                 const response = await fetch('/api/db-signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        name: name, 
                         email: email, 
-                        role: role, 
-                        password: pass, 
-                        schoolCode: role === 'Student' ? 'AMZN-TLEVEL' : code 
+                        token: token
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`Registration successful!`);
+                    alert(`Account authorized successfully! Check your email inbox for your generated access credentials.`);
                     toggleAuthView(false);
                     document.getElementById('login-email').value = email;
                 } else {
@@ -181,12 +196,12 @@
                     errorBox.classList.remove('hidden');
                 }
             } catch (err) {
-                errorBox.textContent = "Could not reach the registration server.";
+                errorBox.textContent = "Could not verify details with the sign-up handler database server.";
                 errorBox.classList.remove('hidden');
             }
         }
 
-        // SECURE AUTHENTICATION VIA SERVER API
+        // SECURE LOGIN AUTHENTICATION VIA DB ENDPOINT
         async function handlePortalLoginVerification() {
             const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
             const passInput = document.getElementById('login-password').value.trim();
@@ -211,12 +226,11 @@
                     localStorage.setItem('activeSession', result.name);
                     localStorage.setItem('activePathway', `Portal Role: ${result.role}`);
                     
-                    // ASSIGN A CRYPTOGRAPHIC ACCESS TOKEN BOUND TO THE ACCOUNT LEVEL
                     if (result.role === 'IT Staff' || result.role === 'Teacher') {
-                        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance
+                        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance token
                         window.location.href = './admin.html';
                     } else {
-                        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user
+                        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user token
                         window.location.href = './dashboard.html';
                     }
                 } else {
