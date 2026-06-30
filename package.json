@@ -1,7 +1,9 @@
 {
-  "name": "tlevel-placement-hub",
+  "name": "amazon-website-me-make",
   "version": "1.0.0",
+  "description": "T-Level Work Experience Portal",
+  "main": "index.js",
   "dependencies": {
-    "resend": "^3.2.0"
+    "@vercel/postgres": "^0.9.0"
   }
 }
