@@ -45,8 +45,7 @@
                 </button>
             </div>
 
-            <div id="chat-messages-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs">
-                </div>
+            <div id="chat-messages-box" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50 text-xs"></div>
 
             <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
                 <input id="chat-input" type="text" onkeydown="if(event.key === 'Enter') dispatchUserMessage()" placeholder="Ask about 'hours', 'rules', 'XP', 'industry placements'..." class="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#ff9900]" />
@@ -58,19 +57,48 @@
     </div>
 
     <script>
-        // Global variables for safety rules
         let loadedBlocklist = [];
 
+        // Comprehensive educational dictionary grouping structural target keywords for advanced context lookups
+        const KNOWLEDGE_BASE = [
+            {
+                intents: ['hour', 'duration', 'time', 'length', 'day', 'weeks', 'minimum'],
+                response: "Under UK Department for Education guidelines, your T-Level Industry Placement must cover a minimum of <strong>315 hours</strong> (approximately 45 working days). It can extend up to 450 hours total for deep professional development context."
+            },
+            {
+                intents: ['xp', 'point', 'streak', 'level', 'gamification', 'score'],
+                response: "Your institutional portal grants **XP milestones** and increases your active **study streak counters** every time you log dynamic reflection entries or complete self-paced technical guidance chapters."
+            },
+            {
+                intents: ['rule', 'law', 'guideline', 'health', 'safety', 'gdpr', 'act', 'legal', 'policy'],
+                response: "All T-Level student frameworks strictly align with the **Health and Safety at Work Act (1974)** and **UK GDPR processing protocols**. Your host employer must supply a verifiable workplace safety induction during day one initialization."
+            },
+            {
+                intents: ['logbook', 'diary', 'submit', 'record', 'entry', 'evidence', 'add hours', 'track'],
+                response: "To secure credit, utilize the **'Track Placement Orders (Logbook)'** workspace menu. You must supply your tracked decimal hours, select specific learning objectives, and commit a qualitative self-reflection paragraph."
+            },
+            {
+                intents: ['employer', 'company', 'industry', 'host', 'interview', 'find', 'corporate'],
+                response: "Placements are completed with vetted industry employers. If you are struggling to secure an active host connection, schedule an appointment immediately with your college's dedicated external placement coordinator."
+            },
+            {
+                intents: ['grade', 'mark', 'pass', 'fail', 'assess', 'exam', 'certificate'],
+                response: "While placement logs don't receive traditional numeric test marks, clearing your 315 hours and achieving satisfactory employer sign-offs on core learning outcomes is **mandatory** to pass your comprehensive T-Level certification."
+            }
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
-            applyGlobalAccessibilityStateTokens();
+            if (typeof applyGlobalAccessibilityStateTokens === 'function') {
+                applyGlobalAccessibilityStateTokens();
+            }
             initializeChatWorkspace();
             loadBlocklistFile();
         });
 
-        // 1. Fetch blocklist terms on initialization
         async function loadBlocklistFile() {
             try {
                 const response = await fetch('./blocklist.txt');
+                if (!response.ok) throw new Error("File missing");
                 const textData = await response.text();
                 loadedBlocklist = textData
                     .split('\n')
@@ -78,19 +106,14 @@
                     .filter(word => word.length > 0);
                 console.log(`Compliance Guardrails Active: ${loadedBlocklist.length} terms loaded.`);
             } catch (error) {
-                console.error("Could not load blocklist.txt configuration file:", error);
+                console.warn("Using fallback local moderation profile context:", error);
+                loadedBlocklist = ["hack", "bypass", "exploit"]; 
             }
         }
 
-        // 2. Scan text function
         function containsProhibitedContent(textContent) {
             const lowerText = textContent.toLowerCase();
-            for (let blockedWord of loadedBlocklist) {
-                if (lowerText.includes(blockedWord)) {
-                    return true;
-                }
-            }
-            return false;
+            return loadedBlocklist.some(blockedWord => lowerText.includes(blockedWord));
         }
 
         function getStudentName() {
@@ -107,48 +130,47 @@
                 document.getElementById('chat-messages-box').innerHTML = existingHistory;
                 scrollToBottom();
             } else {
-                appendChatBubble(`Hello ${getStudentName()}! I'm Aria, your industry placement diagnostic coach. Ask me anything about your hours requirement, logbook submissions, or placement policies!`, 'bot');
+                appendChatBubble(`Hello ${getStudentName()}! I'm Aria, your advanced educational diagnostic advisor. Ask me specific analytical questions regarding your T-Level policy compliance guidelines, minimum hour criteria, logbook configurations, or framework rules!`, 'bot');
             }
         }
 
+        // SECURE BUBBLE CONTEXT HANDLER: Uses textContent alongside strong tags to eliminate innerHTML injection surface exploits
         function appendChatBubble(text, sender) {
             const box = document.getElementById('chat-messages-box');
             const wrapper = document.createElement('div');
             
-            if (sender === 'user') {
-                wrapper.className = "flex justify-end";
-                wrapper.innerHTML = `
-                    <div class="bg-slate-800 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] shadow-xs font-medium">
-                        ${text}
-                    </div>
-                `;
-            } else {
-                wrapper.className = "flex justify-start";
-                wrapper.innerHTML = `
-                    <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[80%] shadow-xs text-slate-800 leading-relaxed">
-                        ${text}
-                    </div>
-                `;
-            }
+            wrapper.className = sender === 'user' ? "flex justify-end" : "flex justify-start";
+            
+            const messageCard = document.createElement('div');
+            messageCard.className = sender === 'user' 
+                ? "bg-slate-800 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] shadow-xs font-medium text-right"
+                : "bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[80%] shadow-xs text-slate-800 leading-relaxed";
 
+            // Process styling elements securely without blindly trusting innerHTML
+            let formattedText = text
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/&lt;strong&gt;(.*?)&lt;\/strong&gt;/g, '<strong>$1</strong>');
+
+            messageCard.innerHTML = formattedText;
+            wrapper.appendChild(messageCard);
             box.appendChild(wrapper);
+            
             scrollToBottom();
             
             const username = localStorage.getItem('activeSession') || 'default_user';
             localStorage.setItem(`chat_history_${username}`, box.innerHTML);
         }
 
-        // 3. Updated intercept handling logic
         function dispatchUserMessage() {
             const input = document.getElementById('chat-input');
             const query = input.value.trim();
             if (!query) return;
 
-            // Run security compliance analysis check before logging anything to the view
             if (containsProhibitedContent(query)) {
                 alert("System Warning: Your message contains terms prohibited within the portal's compliance registry.");
-                input.value = ''; // Safely clear the input field
-                return; // Kill execution stream
+                input.value = '';
+                return;
             }
 
             appendChatBubble(query, 'user');
@@ -157,23 +179,22 @@
             setTimeout(() => {
                 const response = matchBotResponse(query.toLowerCase());
                 appendChatBubble(response, 'bot');
-            }, 600);
+            }, 500);
         }
 
+        // INTENT-BASED DIAGNOSTIC MATCH ROUTER
         function matchBotResponse(msg) {
-            if (msg.includes('hour') || msg.includes('duration') || msg.includes('time')) {
-                return `Under UK Department for Education guidelines, your T-Level Industry Placement must last at least <strong>315 hours</strong> (approximately 45 days) and up to 450 hours total.`;
+            // Evaluates phrase structures dynamically against our knowledge base matrices
+            const match = KNOWLEDGE_BASE.find(node => 
+                node.intents.some(keyword => msg.includes(keyword))
+            );
+
+            if (match) {
+                return match.response;
             }
-            if (msg.includes('xp') || msg.includes('points') || msg.includes('streak')) {
-                return `You earn <strong>XP</strong> and grow your study streak every time you commit entries to your Logbook and complete training manuals!`;
-            }
-            if (msg.includes('rule') || msg.includes('law') || msg.includes('guideline') || msg.includes('health')) {
-                return `Placements conform tightly to the Health and Safety at Work Act (1974) and active GDPR data frameworks. Always ensure your host employer covers your induction safety brief!`;
-            }
-            if (msg.includes('logbook') || msg.includes('diary') || msg.includes('submit')) {
-                return `You can use the <strong>Track Placement Orders (Logbook)</strong> tab to quickly log hours and store critical evidence logs needed for college review.`;
-            }
-            return `Interesting query, ${getStudentName()}! I am currently operating in standalone simulation mode. Try asking me about 'hours', 'logbook rules', or 'how to earn XP'!`;
+
+            // Firm, educational containment loop if the prompt is out-of-scope
+            return `I can only address verified curriculum questions regarding your T-Level timeline. Please adjust your request to explore your **hours**, **logbook updates**, **employer rules**, or **grading criteria**, ${getStudentName()}.`;
         }
 
         function scrollToBottom() {
@@ -186,7 +207,7 @@
                 const username = localStorage.getItem('activeSession') || 'default_user';
                 localStorage.removeItem(`chat_history_${username}`);
                 document.getElementById('chat-messages-box').innerHTML = '';
-                appendChatBubble(`Logs cleared. How can I assist you with your T-Level query today, ${getStudentName()}?`, 'bot');
+                appendChatBubble(`Logs cleared. What structural T-Level policy parameters can I unpack for you now, ${getStudentName()}?`, 'bot');
             }
         }
     </script>
