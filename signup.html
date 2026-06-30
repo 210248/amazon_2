@@ -34,26 +34,16 @@
                 <p class="text-xs text-slate-500 mt-1 font-medium font-display">UK T-Level Portal Registration</p>
             </div>
 
-            <div id="alert-box" class="hidden mb-4 p-3 rounded-xl text-xs font-medium border"></div>
+            <div id="login-error" class="hidden mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800"></div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Your Full Name</label>
-                    <input id="signup-name" type="text" class="w-full px-4 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900] transition" placeholder="Taylor Brooke" />
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Choose Username</label>
-                    <input id="signup-username" type="text" class="w-full px-4 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900] transition" placeholder="taylor123" />
+                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Institutional Email Address</label>
+                    <input id="signup-username" type="email" class="w-full px-4 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900] transition" placeholder="student@college.ac.uk" />
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1 uppercase tracking-wide">Password</label>
-                    <input id="signup-password" type="password" class="w-full px-4 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#ff9900] transition" placeholder="••••••••" />
-                </div>
-
-                <button onclick="executeRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold text-xs transition tracking-wide cursor-pointer shadow-xs">
-                    Create Portal Profile
+                <button onclick="handlePortalRegistration()" class="w-full bg-[#ff9900] hover:bg-[#e48900] text-slate-900 py-2.5 rounded-xl font-bold text-xs transition tracking-wide cursor-pointer shadow-xs">
+                    Send Verification Code
                 </button>
             </div>
 
@@ -67,68 +57,13 @@
 
     </div>
 
+    <script src="./main.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            applyGlobalAccessibilityStateTokens();
+            if (typeof applyGlobalAccessibilityStateTokens === 'function') {
+                applyGlobalAccessibilityStateTokens();
+            }
         });
-
-        function executeRegistration() {
-            const name = document.getElementById('signup-name').value.trim();
-            const user = document.getElementById('signup-username').value.trim().toLowerCase();
-            const pass = document.getElementById('signup-password').value.trim();
-            const alertBox = document.getElementById('alert-box');
-
-            alertBox.className = "hidden mb-4 p-3 rounded-xl text-xs font-medium border";
-
-            if (!name || !user || !pass) {
-                alertBox.textContent = "Please fill in all registration fields.";
-                alertBox.classList.remove('hidden');
-                alertBox.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
-                return;
-            }
-
-            const profileData = { fullName: name, username: user, password: pass };
-            localStorage.setItem(`user_${user}`, JSON.stringify(profileData));
-
-            alertBox.textContent = "Account successfully registered! Redirecting to login hub...";
-            alertBox.classList.remove('hidden');
-            alertBox.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-800');
-
-            setTimeout(() => {
-                window.location.href = './index.html';
-            }, 1800);
-        }
-
-        function applyGlobalAccessibilityStateTokens() {
-            const body = document.getElementById('dashboard-global-body');
-            const textScale = localStorage.getItem('access_text_scale') || 'small';
-            const contrastMode = localStorage.getItem('access_contrast_mode') === 'true';
-
-            body.classList.remove('text-sm', 'text-base', 'text-lg');
-            if (textScale === 'large') body.classList.add('text-base');
-            else if (textScale === 'xlarge') body.classList.add('text-lg');
-            else body.classList.add('text-sm');
-
-            if (contrastMode) {
-                body.style.filter = "contrast(1.15) saturate(1.05)";
-            } else {
-                body.style.filter = "none";
-            }
-
-            const wrapper = document.getElementById('page-wrapper');
-            if (wrapper) {
-                const currentView = localStorage.getItem('device_view') || 'desktop';
-                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                
-                if (currentView === 'phone') {
-                    wrapper.classList.add('max-w-[375px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                } else if (currentView === 'tablet') {
-                    wrapper.classList.add('max-w-[768px]', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                } else {
-                    wrapper.classList.add('max-w-full');
-                }
-            }
-        }
     </script>
 </body>
 </html>
