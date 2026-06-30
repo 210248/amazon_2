@@ -173,7 +173,7 @@ async function verifyPortal2FACode(username) {
 }
 
 // =========================================================================
-// 4. SECURE AUTHENTICATION LOGIN HANDLER
+// 4. SECURE AUTHENTICATION LOGIN HANDLER (WITH INBUILT TESTING BYPASS)
 // =========================================================================
 
 window.handlePortalLoginVerification = async function() {
@@ -195,25 +195,43 @@ window.handlePortalLoginVerification = async function() {
         return;
     }
 
-    // --- HARDCODED BYPASS LOGIC FOR TESTING ---
+    // -------------------------------------------------------------------------
+    // 🔒 INBUILT CREDENTIALS BYPASS (Skips the DB completely for these users)
+    // -------------------------------------------------------------------------
+    
+    // 1. Master Administrator Bypass
     if (userInput === 'admin@school.uk' && passInput === 'supersecret') {
+        if (errorBox) errorBox.classList.add('hidden'); 
         localStorage.setItem('activeSession', 'Master Administrator');
         localStorage.setItem('activePathway', 'Portal Role: IT Staff');
         localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance token
+        
+        alert("✨ Logged in successfully using Inbuilt Admin Bypass!");
         window.location.href = './admin.html';
-        return;
+        return; // Stops here, never runs DB fetch queries
     }
 
+    // 2. Demo Student Bypass
     if (userInput === 'student' && passInput === 'password') {
+        if (errorBox) errorBox.classList.add('hidden');
         localStorage.setItem('activeSession', 'Alex Mercer');
         localStorage.setItem('activePathway', 'Digital Production (Student View)');
         localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user token
+        
+        alert("✨ Logged in successfully using Inbuilt Student Bypass!");
         window.location.href = './dashboard.html';
-        return;
+        return; // Stops here, never runs DB fetch queries
     }
 
-    // --- LIVE DATABASE LOGIN BACKEND FALLBACK ---
+    // -------------------------------------------------------------------------
+    // 🌐 LIVE DATABASE ROUTE (Fallback for all other accounts)
+    // -------------------------------------------------------------------------
     try {
+        if (errorBox) {
+            errorBox.textContent = "Authenticating with database services... Please wait.";
+            errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-blue-50 border-blue-200 text-blue-800 block";
+        }
+
         const response = await fetch('/api/db-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -239,14 +257,14 @@ window.handlePortalLoginVerification = async function() {
         } else {
             if (errorBox) {
                 errorBox.textContent = result.error;
-                errorBox.classList.remove('hidden');
+                errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800 block";
             }
         }
     } catch (error) {
         console.error(error);
         if (errorBox) {
             errorBox.textContent = "Could not authenticate your access records with the database.";
-            errorBox.classList.remove('hidden');
+            errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800 block";
         }
     }
 };
