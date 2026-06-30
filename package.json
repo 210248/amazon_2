@@ -1,8 +1,7 @@
 {
   "name": "amazon-website-me-make",
   "version": "1.0.0",
-  "description": "T-Level Work Experience Portal",
-  "main": "index.js",
+  "type": "module",
   "dependencies": {
     "@vercel/postgres": "^0.9.0"
   }
