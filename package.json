@@ -1,6 +1,6 @@
 {
   "name": "amazon-tlevel-portal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Amazon T-Level Portal Tracker",
   "main": "index.html",
   "dependencies": {
