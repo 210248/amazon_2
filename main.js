@@ -177,9 +177,15 @@ async function verifyPortal2FACode(username) {
 // =========================================================================
 
 window.handlePortalLoginVerification = async function() {
-    const userInput = document.getElementById('login-username').value.trim().toLowerCase();
-    const passInput = document.getElementById('login-password').value.trim();
+    // Check if fields exist in the active DOM view layout
+    const usernameElement = document.getElementById('login-username') || document.getElementById('login-email');
+    const passwordElement = document.getElementById('login-password');
     const errorBox = document.getElementById('login-error');
+
+    if (!usernameElement || !passwordElement) return;
+
+    const userInput = usernameElement.value.trim().toLowerCase();
+    const passInput = passwordElement.value.trim();
 
     if (!userInput || !passInput) {
         if (errorBox) {
@@ -189,14 +195,24 @@ window.handlePortalLoginVerification = async function() {
         return;
     }
 
+    // --- HARDCODED BYPASS LOGIC FOR TESTING ---
+    if (userInput === 'admin@school.uk' && passInput === 'supersecret') {
+        localStorage.setItem('activeSession', 'Master Administrator');
+        localStorage.setItem('activePathway', 'Portal Role: IT Staff');
+        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance token
+        window.location.href = './admin.html';
+        return;
+    }
+
     if (userInput === 'student' && passInput === 'password') {
         localStorage.setItem('activeSession', 'Alex Mercer');
         localStorage.setItem('activePathway', 'Digital Production (Student View)');
-        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1');
+        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user token
         window.location.href = './dashboard.html';
         return;
     }
 
+    // --- LIVE DATABASE LOGIN BACKEND FALLBACK ---
     try {
         const response = await fetch('/api/db-login', {
             method: 'POST',
@@ -215,7 +231,11 @@ window.handlePortalLoginVerification = async function() {
             else if (result.role === 'Parent') localStorage.setItem('system_auth_checksum', 'sec_tok_3c5b8e');
             else localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1');
 
-            window.location.href = './dashboard.html';
+            if (result.role === 'IT Staff' || result.role === 'Teacher') {
+                window.location.href = './admin.html';
+            } else {
+                window.location.href = './dashboard.html';
+            }
         } else {
             if (errorBox) {
                 errorBox.textContent = result.error;
