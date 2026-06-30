@@ -37,13 +37,13 @@ export default async function handler(req, res) {
         const hash = crypto.pbkdf2Sync(finalPassword, salt, 1000, 64, 'sha512').toString('hex');
         const securePasswordDbPayload = `${salt}:${hash}`;
 
-        // 6. PARAMETERIZED INSERTION (Matching your database column names)
+        // 6. PARAMETERIZED INSERTION (Matching your database column names: fullname)
         await pool.query(
             `INSERT INTO users (fullname, email, password, role) VALUES ($1, $2, $3, $4);`,
             [finalName.trim(), email.trim().toLowerCase(), securePasswordDbPayload, finalRole]
         );
 
-        return response.status(200).json({ success: true, message: 'User registered successfully!' });
+        return res.status(200).json({ success: true, message: 'User registered successfully!' });
 
     } catch (error) {
         if (error.code === '23505') { 
