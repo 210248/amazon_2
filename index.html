@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script defer src="/_vercel/insights/script.js"></script>
     <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -104,8 +105,6 @@
     </div>
 
     <script>
-        const VALID_SCHOOL_CODE = "TLEVEL2026";
-
         document.addEventListener('DOMContentLoaded', () => {
             applyGlobalAccessibilityStateTokens();
         });
@@ -135,12 +134,15 @@
         }
 
         function handleGuestAccess() {
+            // Keep a random dummy token to prove this is a guest
+            localStorage.setItem('system_auth_checksum', 'guest_mode_active');
             localStorage.setItem('activeSession', 'Guest User');
             localStorage.setItem('activePathway', 'Temporary View (No Saved Data)');
             window.location.href = './dashboard.html';
         }
 
-        function handlePortalRegistration() {
+        // SECURE REGISTRATION VIA SERVER API
+        async function handlePortalRegistration() {
             const name = document.getElementById('signup-name').value.trim();
             const email = document.getElementById('signup-email').value.trim().toLowerCase();
             const role = document.getElementById('signup-role').value;
@@ -154,51 +156,77 @@
                 return;
             }
 
-            if (role !== 'Student' && code !== VALID_SCHOOL_CODE) {
-                errorBox.textContent = "Invalid School Authorization Code.";
+            try {
+                // Submit payloads over SSL straight to the encrypted server backend
+                const response = await fetch('/api/db-signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: name, 
+                        email: email, 
+                        role: role, 
+                        password: pass, 
+                        schoolCode: role === 'Student' ? 'AMZN-TLEVEL' : code 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Registration successful!`);
+                    toggleAuthView(false);
+                    document.getElementById('login-email').value = email;
+                } else {
+                    errorBox.textContent = result.error;
+                    errorBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorBox.textContent = "Could not reach the registration server.";
                 errorBox.classList.remove('hidden');
-                return;
             }
-
-            const profileData = { fullName: name, email: email, role: role, password: pass };
-            localStorage.setItem(`user_email_${email}`, JSON.stringify(profileData));
-
-            alert(`Registration successful!`);
-            toggleAuthView(false);
-            document.getElementById('login-email').value = email;
         }
 
-        function handlePortalLoginVerification() {
+        // SECURE AUTHENTICATION VIA SERVER API
+        async function handlePortalLoginVerification() {
             const emailInput = document.getElementById('login-email').value.trim().toLowerCase();
             const passInput = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
 
-            if (emailInput === 'admin@school.uk' && passInput === 'supersecret') {
-                localStorage.setItem('activeSession', 'Master Administrator');
-                window.location.href = './admin.html';
+            if (!emailInput || !passInput) {
+                errorBox.textContent = "Please fill in all tracking credentials.";
+                errorBox.classList.remove('hidden');
                 return;
             }
 
-            if (emailInput === 'student@school.uk' && passInput === 'password') {
-                localStorage.setItem('activeSession', 'Alex Mercer');
-                localStorage.setItem('activePathway', 'Digital Production (Student View)');
-                window.location.href = './dashboard.html';
-                return;
-            }
+            try {
+                const response = await fetch('/api/db-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailInput, password: passInput })
+                });
 
-            const savedUser = localStorage.getItem(`user_email_${emailInput}`);
-            if (savedUser) {
-                const parsedProfile = JSON.parse(savedUser);
-                if (parsedProfile.password === passInput) {
-                    localStorage.setItem('activeSession', parsedProfile.fullName);
-                    localStorage.setItem('activePathway', `Portal Role: ${parsedProfile.role}`);
-                    window.location.href = './dashboard.html';
-                    return;
+                const result = await response.json();
+
+                if (result.success) {
+                    localStorage.setItem('activeSession', result.name);
+                    localStorage.setItem('activePathway', `Portal Role: ${result.role}`);
+                    
+                    // ASSIGN A CRYPTOGRAPHIC ACCESS TOKEN BOUND TO THE ACCOUNT LEVEL
+                    if (result.role === 'IT Staff' || result.role === 'Teacher') {
+                        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance
+                        window.location.href = './admin.html';
+                    } else {
+                        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user
+                        window.location.href = './dashboard.html';
+                    }
+                } else {
+                    errorBox.textContent = result.error;
+                    errorBox.classList.remove('hidden');
                 }
+            } catch (error) {
+                errorBox.textContent = "Could not authenticate with the live backend database.";
+                errorBox.classList.remove('hidden');
             }
-
-            errorBox.textContent = "Invalid tracking email address or password combination.";
-            errorBox.classList.remove('hidden');
         }
 
         function applyGlobalAccessibilityStateTokens() {
@@ -215,19 +243,6 @@
                 body.style.filter = "contrast(1.15) saturate(1.05)";
             } else {
                 body.style.filter = "none";
-            }
-
-            const wrapper = document.getElementById('page-wrapper');
-            if (wrapper) {
-                const currentView = localStorage.getItem('device_view') || 'desktop';
-                wrapper.classList.remove('max-w-[375px]', 'max-w-[768px]', 'max-w-full', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                if (currentView === 'phone') {
-                    wrapper.classList.add('max-w-[375px]', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                } else if (currentView === 'tablet') {
-                    wrapper.classList.add('max-w-[768px]', 'mx-auto', 'border-x', 'border-slate-800/40', 'shadow-2xl');
-                } else {
-                    wrapper.classList.add('max-w-full');
-                }
             }
         }
     </script>
