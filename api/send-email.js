@@ -1,14 +1,13 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 'mock_key');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Safer global variable initialization for serverless contexts
 if (!global.otpCache) {
     global.otpCache = new Map();
 }
 
 export default async function handler(req, res) {
-    // Enable CORS headers so your frontend is never blocked
+    // Standard CORS security headers so your front-end can talk to the back-end cleanly
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -28,22 +27,21 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Email address is required.' });
     }
 
-    // Check if API key exists
     if (!process.env.RESEND_API_KEY) {
-        return res.status(500).json({ success: false, error: 'Email service missing environment variable configuration.' });
+        return res.status(500).json({ success: false, error: 'Vercend API key variable is missing.' });
     }
 
     try {
-        // Generate code
+        // 1. Generate a secure random 6-digit numeric verification token
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Save to cache
+        // 2. Cache the code against the user's email address for 10 minutes
         global.otpCache.set(email.trim().toLowerCase(), {
             token: verificationCode,
             expires: Date.now() + 10 * 60 * 1000
         });
 
-        // Send email
+        // 3. Send email via Resend sandbox (strictly from onboarding@resend.dev)
         const result = await resend.emails.send({
             from: 'onboarding@resend.dev',
             to: email.trim().toLowerCase(),
@@ -62,12 +60,12 @@ export default async function handler(req, res) {
         });
 
         if (result.error) {
-            return res.status(400).json({ success: false, error: result.error.message || "Resend transmission error." });
+            return res.status(400).json({ success: false, error: result.error.message });
         }
 
         return res.status(200).json({ success: true });
 
     } catch (error) {
-        return res.status(500).json({ success: false, error: error.message || 'Internal distribution failure.' });
+        return res.status(500).json({ success: false, error: error.message });
     }
 }
