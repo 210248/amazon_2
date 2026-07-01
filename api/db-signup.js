@@ -35,8 +35,9 @@ export default async function handler(req, res) {
         const securePasswordDbPayload = `${salt}:${hash}`;
 
         // Neon direct parameterized entry array insertion
+        // Change 'fullname' to 'name' inside your SQL string
         await sql(
-            `INSERT INTO users (fullname, email, password, role) VALUES ($1, $2, $3, $4);`,
+            `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4);`,
             [finalName.trim(), email.trim().toLowerCase(), securePasswordDbPayload, finalRole]
         );
 

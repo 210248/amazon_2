@@ -36,11 +36,12 @@ export default async function handler(req, res) {
         const verificationHashGuess = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
 
         if (verificationHashGuess === originalHash) {
-            return res.status(200).json({ 
-                success: true, 
-                name: user.fullname, 
-                role: user.role 
-            });
+        return res.status(200).json({ 
+            success: true, 
+            name: user.name, // Change user.fullname to user.name
+            role: user.role 
+        });
+
         } else {
             return res.status(401).json({ success: false, error: 'Invalid email or password combination.' });
         }
