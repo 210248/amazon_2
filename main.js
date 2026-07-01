@@ -177,7 +177,6 @@ async function verifyPortal2FACode(username) {
 // =========================================================================
 
 window.handlePortalLoginVerification = async function() {
-    // Check if fields exist in the active DOM view layout
     const usernameElement = document.getElementById('login-username') || document.getElementById('login-email');
     const passwordElement = document.getElementById('login-password');
     const errorBox = document.getElementById('login-error');
@@ -196,42 +195,25 @@ window.handlePortalLoginVerification = async function() {
     }
 
     // -------------------------------------------------------------------------
-    // 🔒 INBUILT CREDENTIALS BYPASS (Skips the DB completely for these users)
+    // 🔒 ABSOLUTE LOCAL BYPASS (No Database Call Allowed For This Account)
     // -------------------------------------------------------------------------
-    
-    // 1. Master Administrator Bypass
     if (userInput === 'admin@school.uk' && passInput === 'supersecret') {
-        if (errorBox) errorBox.classList.add('hidden'); 
+        if (errorBox) errorBox.classList.add('hidden');
+        
+        // Populate the exact security credentials the admin.html Guard expects
         localStorage.setItem('activeSession', 'Master Administrator');
         localStorage.setItem('activePathway', 'Portal Role: IT Staff');
-        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); // Admin clearance token
+        localStorage.setItem('system_auth_checksum', 'sec_tok_0a4f6d'); 
         
-        alert("✨ Logged in successfully using Inbuilt Admin Bypass!");
+        alert("✨ Logged in successfully via Master Admin Local Overrides!");
         window.location.href = './admin.html';
-        return; // Stops here, never runs DB fetch queries
-    }
-
-    // 2. Demo Student Bypass
-    if (userInput === 'student' && passInput === 'password') {
-        if (errorBox) errorBox.classList.add('hidden');
-        localStorage.setItem('activeSession', 'Alex Mercer');
-        localStorage.setItem('activePathway', 'Digital Production (Student View)');
-        localStorage.setItem('system_auth_checksum', 'sec_tok_8f92a1'); // Standard user token
-        
-        alert("✨ Logged in successfully using Inbuilt Student Bypass!");
-        window.location.href = './dashboard.html';
-        return; // Stops here, never runs DB fetch queries
+        return; // 🛑 CRITICAL: Stops the function here so the database is never called!
     }
 
     // -------------------------------------------------------------------------
-    // 🌐 LIVE DATABASE ROUTE (Fallback for all other accounts)
+    // 🌐 LIVE DATABASE FALLBACK (For regular users/students)
     // -------------------------------------------------------------------------
     try {
-        if (errorBox) {
-            errorBox.textContent = "Authenticating with database services... Please wait.";
-            errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-blue-50 border-blue-200 text-blue-800 block";
-        }
-
         const response = await fetch('/api/db-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -257,18 +239,17 @@ window.handlePortalLoginVerification = async function() {
         } else {
             if (errorBox) {
                 errorBox.textContent = result.error;
-                errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800 block";
+                errorBox.classList.remove('hidden');
             }
         }
     } catch (error) {
         console.error(error);
         if (errorBox) {
             errorBox.textContent = "Could not authenticate your access records with the database.";
-            errorBox.className = "mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800 block";
+            errorBox.classList.remove('hidden');
         }
     }
 };
-
 // =========================================================================
 // 5. SECURE FRONT-END INPUT PROTECTION UTILITIES (XSS DEFENSE)
 // =========================================================================
