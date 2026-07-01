@@ -1,6 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <script>
+    // 🔒 STRICT PRIVILEGE & SESSION GUARD
+    (function() {
+        const session = localStorage.getItem('activeSession');
+        const token = localStorage.getItem('system_auth_checksum');
+        const pathway = localStorage.getItem('activePathway');
+
+        // Check if the user has the explicit Master Admin / IT Staff clearance token
+        const isAdmin = (session === 'Master Administrator') || (pathway && pathway.includes('IT Staff')) || (pathway && pathway.includes('Teacher'));
+        const hasValidToken = (token === 'sec_tok_0a4f6d' || token === 'sec_tok_7d1e94');
+
+        if (!session || !hasValidToken || !isAdmin) {
+            alert("⚠️ Unauthorized Access. High clearance security credentials required.");
+            window.location.href = './index.html'; // Kick them back to login immediately
+        }
+    })();
+</script>
     <script defer src="/_vercel/insights/script.js"></script>
     <script src="./accessibility.js"></script>
     <meta charset="UTF-8" />
