@@ -112,9 +112,62 @@
         }
 
         function containsProhibitedContent(textContent) {
-            const lowerText = textContent.toLowerCase();
-            return loadedBlocklist.some(blockedWord => lowerText.includes(blockedWord));
-        }
+    if (!textContent) return false;
+
+    // 1. Convert to lowercase and strip structural accents/diacritics (e.g., "bîtch" -> "bitch")
+    let normalized = textContent.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    // 2. Transliterate lookalike character variations and numbers (Leetspeak)
+    normalized = normalized
+        .replace(/0/g, 'o')
+        .replace(/1/g, 'i')
+        .replace(/3/g, 'e')
+        .replace(/4/g, 'a')
+        .replace(/5/g, 's')
+        .replace(/7/g, 't')
+        .replace(/@/g, 'a')
+        .replace(/\$/g, 's')
+        .replace(/\|/g, 'i');
+
+    // 3. Remove all symbols, spacing, and inner-word punctuation (e.g., "f.u_c-k" -> "fuck")
+    const cleanStrippedText = normalized.replace(/[^a-z0-9\s]/g, "");
+
+    // 4. Split text into an array of words to test individual targets
+    const individualWords = cleanStrippedText.split(/\s+/);
+
+    // 5. Evaluate against the loaded compliance blocklist
+    const hasViolation = loadedBlocklist.some(blockedWord => {
+        if (!blockedWord) return false;
+        
+        // Triggers the popup if the clean word is found anywhere inside the phrase or standalone words
+        return cleanStrippedText.includes(blockedWord) || 
+               individualWords.includes(blockedWord) || 
+               normalized.includes(blockedWord);
+    });
+
+    return hasViolation;
+}
+
+function dispatchUserMessage() {
+    const input = document.getElementById('chat-input');
+    const query = input.value.trim();
+    if (!query) return;
+
+    // 🚨 THIS IS WHERE THE POPUP IS ENFORCED FOR ALL VARIATIONS
+    if (containsProhibitedContent(query)) {
+        alert("System Warning: Your message contains terms prohibited within the portal's compliance registry.");
+        input.value = '';
+        return; // 🛑 Drops execution immediately so it never shows in the chat logs!
+    }
+
+    appendChatBubble(query, 'user');
+    input.value = '';
+
+    setTimeout(() => {
+        const response = matchBotResponse(query.toLowerCase());
+        appendChatBubble(response, 'bot');
+    }, 500);
+}
 
         function getStudentName() {
             const sessionName = localStorage.getItem('activeSession') || 'Taylor Brooke';
