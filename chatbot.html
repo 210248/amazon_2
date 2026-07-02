@@ -162,26 +162,48 @@
             localStorage.setItem(`chat_history_${username}`, box.innerHTML);
         }
 
-        function dispatchUserMessage() {
-            const input = document.getElementById('chat-input');
-            const query = input.value.trim();
-            if (!query) return;
+        async function dispatchUserMessage() {
+    const input = document.getElementById('chat-input');
+    const query = input.value.trim();
+    if (!query) return;
 
-            if (containsProhibitedContent(query)) {
-                alert("System Warning: Your message contains terms prohibited within the portal's compliance registry.");
-                input.value = '';
-                return;
-            }
+    // 1. Run local fuzzy-blocklist regex safety check first
+    if (containsProhibitedContent(query)) {
+        alert("System Warning: Your message contains terms prohibited within the portal's compliance registry.");
+        input.value = '';
+        return;
+    }
 
-            appendChatBubble(query, 'user');
+    try {
+        // 2. 🌐 Query the automated cloud AI filter endpoint to inspect meaning/intent
+        const checkResponse = await fetch('/api/verify-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: query })
+        });
+        
+        const checkResult = await checkResponse.json();
+
+        // If the external safety filter flags the content as rude or unsafe
+        if (!checkResult.success || checkResult.flagged) {
+            alert(`🚨 Portal Notification: ${checkResult.reason || "Submission rejected by automated safety checks."}`);
             input.value = '';
-
-            setTimeout(() => {
-                const response = matchBotResponse(query.toLowerCase());
-                appendChatBubble(response, 'bot');
-            }, 500);
+            return;
         }
 
+    } catch (err) {
+        console.warn("External safety check timed out, falling back to local controls.");
+    }
+
+    // 3. Proceed normally if the text passes all checks
+    appendChatBubble(query, 'user');
+    input.value = '';
+
+    setTimeout(() => {
+        const response = matchBotResponse(query.toLowerCase());
+        appendChatBubble(response, 'bot');
+    }, 500);
+}
         // INTENT-BASED DIAGNOSTIC MATCH ROUTER
         function matchBotResponse(msg) {
             // Evaluates phrase structures dynamically against our knowledge base matrices
